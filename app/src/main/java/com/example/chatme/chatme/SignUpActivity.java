@@ -4,9 +4,11 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 //import android.support.annotation.NonNull;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -21,11 +23,20 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
     private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password;
     private Spinner s_gender;
     private Button s_signup;
@@ -38,8 +49,6 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
 
         this.appContext = this;
-
-        this.mAuth = FirebaseAuth.getInstance();
 
         // Spinner Setup
         s_gender = (Spinner) findViewById(R.id.s_gender);
@@ -138,7 +147,8 @@ public class SignUpActivity extends AppCompatActivity {
                     signupUser.setUsername(s_email_address_val);
                     signupUser.setPassword(s_password_val);
 
-                    InsertUser(signupUser);
+                    UserSignUpTask signUpTask = new UserSignUpTask(signupUser);
+                    signUpTask.execute((Void) null);
                 }
             }
         });
@@ -158,37 +168,102 @@ public class SignUpActivity extends AppCompatActivity {
         },
         null
         );
-
-//        mAuth.createUserWithEmailAndPassword(s_email_address_val, s_password_val)
-//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//                            Intent i = new Intent(appContext, MainActivity.class);
-//                            i.putExtra("username",user.getEmail());
-//                            startActivity(i);
-//                            showProgress(false);
-//                        } else {
-//                            showProgress(false);
-//                            Toast.makeText(appContext, "Failed to connect to server.", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                });
     }
 
-    private void showProgress(final boolean show) {
-        if(show)
-        {
-            pDialog = new ProgressDialog(appContext);  //<<-- Couldnt Recognise
-            pDialog.setMessage("Please wait...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
+    public class UserSignUpTask extends AsyncTask<Void, Void, Boolean> {
+
+        User signupUser;
+        String responseMessage = "";
+
+        UserSignUpTask(User userData) {
+            signupUser = userData;
         }
-        else
-        {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = CommonUtil.showProgress(appContext, pDialog, true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Boolean success = false;
+            try
+            {
+                List<NameValuePair> http_params = new LinkedList<NameValuePair>();
+                http_params.add(new BasicNameValuePair("firstname", signupUser.getFirstname()));
+                http_params.add(new BasicNameValuePair("middlename", signupUser.getMiddlename()));
+                http_params.add(new BasicNameValuePair("lastname", signupUser.getLastname()));
+                http_params.add(new BasicNameValuePair("gender", signupUser.getGender()));
+                http_params.add(new BasicNameValuePair("age", signupUser.getAge() + ""));
+                http_params.add(new BasicNameValuePair("email", signupUser.getEmail()));
+                http_params.add(new BasicNameValuePair("username", signupUser.getUsername()));
+                http_params.add(new BasicNameValuePair("password", signupUser.getPassword()));
+                http_params.add(new BasicNameValuePair("usertype", "User"));
+
+                String paramString = URLEncodedUtils.format(http_params, "utf-8");
+                Log.e("paramString",paramString);
+                String server_url = getResources().getString(R.string.serverUrl) + "/register?"+paramString;
+
+                URL server = new URL(server_url);
+                // Create connection
+                HttpURLConnection myConnection = (HttpURLConnection) server.openConnection();
+                myConnection.setRequestMethod("POST");
+                if (myConnection.getResponseCode() == 200) {
+                    InputStream responseBody = myConnection.getInputStream();
+                    InputStreamReader responseBodyReader =
+                            new InputStreamReader(responseBody, "UTF-8");
+                    JsonReader jsonReader = new JsonReader(responseBodyReader);
+                    jsonReader.beginObject(); // Start processing the JSON object
+                    while (jsonReader.hasNext()) { // Loop through all keys
+                        String key = jsonReader.nextName(); // Fetch the next key
+                        if (key.equals("success")) {
+                            success = jsonReader.nextBoolean();
+                        }
+                        else if(key.equals("message"))
+                        {
+                            responseMessage = jsonReader.nextString();
+                        }
+                        else
+                        {
+                            jsonReader.skipValue(); // Skip values of other keys
+                        }
+                    }
+                    jsonReader.close();
+                    myConnection.disconnect();
+                } else {
+                    // Error handling code goes here
+                }
+            }
+            catch(Exception e)
+            {
+                Log.e("Error",e.toString());
+            }
+
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
             pDialog.dismiss();
+            if (success)
+            {
+                CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
+                    public Void call() {
+                        Intent i = new Intent(appContext, MainActivity.class);
+                        startActivity(i);
+                        return null;
+                    }
+                }) ;
+            }
+            else{
+                CommonUtil.showAlert(appContext, responseMessage);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            CommonUtil.showProgress(appContext, pDialog, false);
         }
     }
 }

@@ -1,8 +1,10 @@
 package com.example.chatme.chatme;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.widget.ProgressBar;
 
 import java.util.concurrent.Callable;
 
@@ -15,6 +17,23 @@ public class CommonUtil {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
+                    }
+                })
+                .show();
+    }
+
+    public static void showAlertWithCallback(Context appContext, String message, final Callable<Void> method)
+    {
+        new AlertDialog.Builder(appContext)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        method.call();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     }
                 })
                 .show();
@@ -40,5 +59,22 @@ public class CommonUtil {
                         }
                     }
                 }).show();
+    }
+
+    public static ProgressDialog showProgress(Context appContext, ProgressDialog pDialog, final boolean show) {
+        if(show)
+        {
+            pDialog = new ProgressDialog(appContext);
+            pDialog.setMessage("Please wait...");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+            pDialog.show();
+            return pDialog;
+        }
+        else
+        {
+            pDialog.dismiss();
+            return null;
+        }
     }
 }

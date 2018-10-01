@@ -1,4 +1,8 @@
 <resources>
+    <!--Server configuration-->
+    <string name="serverUrl">http://192.168.1.9/heretohelp/webservice</string>
+    <!--End of Server Configuration-->
+
     <string name="app_name">chatme</string>
     <string name="title_activity_login">Sign in</string>
 
