@@ -21,10 +21,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.concurrent.Callable;
+
 public class SignUpActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private EditText s_email_address, s_password, s_confirm_password;
+    private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password;
+    private Spinner s_gender;
     private Button s_signup;
     private ProgressDialog pDialog;
     private Context appContext;
@@ -39,33 +42,61 @@ public class SignUpActivity extends AppCompatActivity {
         this.mAuth = FirebaseAuth.getInstance();
 
         // Spinner Setup
-        Spinner spinner = (Spinner) findViewById(R.id.s_gender);
+        s_gender = (Spinner) findViewById(R.id.s_gender);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, android.R.layout.simple_spinner_item);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
+        s_gender.setAdapter(adapter);
 
         s_email_address = (EditText) findViewById(R.id.s_email_address);
         s_password = (EditText) findViewById(R.id.s_password);
         s_confirm_password = (EditText) findViewById(R.id.s_confirm_password);
-        s_signup = (Button) findViewById(R.id.s_signup);
+        s_first_name = (EditText) findViewById(R.id.s_first_name);
+        s_middle_name = (EditText) findViewById(R.id.s_middle_name);
+        s_last_name = (EditText) findViewById(R.id.s_last_name);
+        s_age = (EditText) findViewById(R.id.s_age);
 
+        // Signup Action
+        s_signup = (Button) findViewById(R.id.s_signup);
         s_signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String s_email_address_val = s_email_address.getText().toString();
                 String s_password_val = s_password.getText().toString();
                 String s_confirm_password_val = s_confirm_password.getText().toString();
+                String s_first_name_val = s_first_name.getText().toString();
+                String s_middle_name_val = s_middle_name.getText().toString();
+                String s_last_name_val = s_last_name.getText().toString();
+                String s_age_val = s_age.getText().toString();
 
                 Boolean error = false;
                 View focusView = null;
-                if(TextUtils.isEmpty(s_email_address_val) && (s_email_address_val.length() < 6))
+                if(TextUtils.isEmpty(s_first_name_val))
+                {
+                    s_first_name.setError(getString(R.string.error_field_required));
+                    focusView = s_first_name;
+                    error = true;
+                }
+                else if(TextUtils.isEmpty(s_last_name_val))
+                {
+                    s_last_name.setError(getString(R.string.error_field_required));
+                    focusView = s_last_name;
+                    error = true;
+                }
+                else if(TextUtils.isEmpty(s_age_val))
+                {
+                    s_age.setError(getString(R.string.error_field_required));
+                    focusView = s_age;
+                    error = true;
+                }
+                else if(TextUtils.isEmpty(s_email_address_val) && (s_email_address_val.length() < 6))
                 {
                     s_email_address.setError(getString(R.string.error_field_required));
                     focusView = s_email_address;
+                    error = true;
                 }
                 else if(!s_email_address_val.contains("@"))
                 {
@@ -97,31 +128,53 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    showProgress(true);
-                    InsertUser(s_email_address_val,s_password_val);
+                    User signupUser = new User();
+                    signupUser.setFirstname(s_first_name_val);
+                    signupUser.setMiddlename(s_middle_name_val);
+                    signupUser.setLastname(s_last_name_val);
+                    signupUser.setGender(s_gender.getSelectedItem().toString());
+                    signupUser.setAge(Integer.parseInt(s_age_val));
+                    signupUser.setEmail(s_email_address_val);
+                    signupUser.setUsername(s_email_address_val);
+                    signupUser.setPassword(s_password_val);
+
+                    InsertUser(signupUser);
                 }
             }
         });
     }
 
-    private void InsertUser(String s_email_address_val, String s_password_val)
+    private void InsertUser(User userData)
     {
-        mAuth.createUserWithEmailAndPassword(s_email_address_val, s_password_val)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Intent i = new Intent(appContext, MainActivity.class);
-                            i.putExtra("username",user.getEmail());
-                            startActivity(i);
-                            showProgress(false);
-                        } else {
-                            showProgress(false);
-                            Toast.makeText(appContext, "Failed to connect to server.", Toast.LENGTH_SHORT).show();
-                        }
+
+        CommonUtil.showAlert(this, "test alert");
+
+        CommonUtil.showAlertMessageWithAction(this,"Please Confirm",
+                new Callable<Void>() {
+                    public Void call() {
+                        Toast.makeText(appContext, "Oopsss.",Toast.LENGTH_SHORT).show();
+                        return null;
                     }
-                });
+        },
+        null
+        );
+
+//        mAuth.createUserWithEmailAndPassword(s_email_address_val, s_password_val)
+//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(Task<AuthResult> task) {
+//                        if (task.isSuccessful()) {
+//                            FirebaseUser user = mAuth.getCurrentUser();
+//                            Intent i = new Intent(appContext, MainActivity.class);
+//                            i.putExtra("username",user.getEmail());
+//                            startActivity(i);
+//                            showProgress(false);
+//                        } else {
+//                            showProgress(false);
+//                            Toast.makeText(appContext, "Failed to connect to server.", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                });
     }
 
     private void showProgress(final boolean show) {
