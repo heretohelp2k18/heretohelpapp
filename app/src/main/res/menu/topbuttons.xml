@@ -1,0 +1,15 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/action_account"
+        android:icon="@drawable/profile"
+        android:orderInCategory="100"
+        android:title="Account"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_logout"
+        android:title="Sign Out"
+        android:icon="@drawable/logout"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
+</menu>
