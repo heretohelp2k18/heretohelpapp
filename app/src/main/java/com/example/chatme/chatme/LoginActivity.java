@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,8 +41,18 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -73,10 +84,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private Context appContext;
-    private ProgressDialog pDialog;
     private Button signup;
     // Firebase
-    private FirebaseAuth mAuth;
+    // private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +96,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         this.appContext = this;
 
         // Firebase Auth
-        this.mAuth = FirebaseAuth.getInstance();
+        // this.mAuth = FirebaseAuth.getInstance();
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -128,13 +138,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null)
-        {
-            Intent i = new Intent(this, MainActivity.class);
-            i.putExtra("username",currentUser.getEmail());
-            startActivity(i);
-        }
+//        FirebaseUser currentUser = mAuth.getCurrentUser();
+//        if(currentUser != null)
+//        {
+//            Intent i = new Intent(this, MainActivity.class);
+//            i.putExtra("username",currentUser.getEmail());
+//            startActivity(i);
+//        }
     }
 
     @Override
@@ -224,36 +234,32 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask.execute((Void) null);
 
-            showProgress(true);
-            //mAuthTask = new UserLoginTask(email, password);
-            //mAuthTask.execute((Void) null);
-
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-//                                Log.d(TAG, "signInWithEmail:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                Intent i = new Intent(appContext, MainActivity.class);
-                                i.putExtra("username",user.getEmail());
-                                startActivity(i);
-                                showProgress(false);
-                            } else {
-                                // If sign in fails, display a message to the user.
-//                                Log.w(TAG, "signInWithEmail:failure", task.getException());
-                                showProgress(false);
-                                Toast.makeText(appContext, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-                            // ...
-                        }
-                    });
+//            mAuth.signInWithEmailAndPassword(email, password)
+//                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<AuthResult> task) {
+//                            if (task.isSuccessful()) {
+//                                // Sign in success, update UI with the signed-in user's information
+////                                Log.d(TAG, "signInWithEmail:success");
+//                                FirebaseUser user = mAuth.getCurrentUser();
+//                                Intent i = new Intent(appContext, MainActivity.class);
+//                                i.putExtra("username",user.getEmail());
+//                                startActivity(i);
+//                                showProgress(false);
+//                            } else {
+//                                // If sign in fails, display a message to the user.
+////                                Log.w(TAG, "signInWithEmail:failure", task.getException());
+//                                showProgress(false);
+//                                Toast.makeText(appContext, "Authentication failed.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//
+//                            // ...
+//                        }
+//                    });
         }
     }
 
@@ -265,25 +271,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() > 4;
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        if(show)
-        {
-            pDialog = new ProgressDialog(appContext);  //<<-- Couldnt Recognise
-            pDialog.setMessage("Please wait...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-        }
-        else
-        {
-            pDialog.dismiss();
-        }
     }
 
     @Override
@@ -346,6 +333,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
+        String responseMessage = getResources().getString(R.string.connection_failed);
         private final String mEmail;
         private final String mPassword;
 
@@ -355,45 +343,86 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            CommonUtil.showProgress(appContext, true);
+        }
+
+        @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
+            Boolean success = false;
+            try
+            {
+                List<NameValuePair> http_params = new LinkedList<NameValuePair>();
+                http_params.add(new BasicNameValuePair("username", mEmail));
+                http_params.add(new BasicNameValuePair("password", mPassword));
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+                String paramString = URLEncodedUtils.format(http_params, "utf-8");
+                Log.e("paramString",paramString);
+                String server_url = getResources().getString(R.string.serverUrl) + "/signin?"+paramString;
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                URL server = new URL(server_url);
+                // Create connection
+                HttpURLConnection myConnection = (HttpURLConnection) server.openConnection();
+                myConnection.setRequestMethod("POST");
+                if (myConnection.getResponseCode() == 200) {
+                    InputStream responseBody = myConnection.getInputStream();
+                    InputStreamReader responseBodyReader =
+                            new InputStreamReader(responseBody, "UTF-8");
+                    JsonReader jsonReader = new JsonReader(responseBodyReader);
+                    jsonReader.beginObject(); // Start processing the JSON object
+                    while (jsonReader.hasNext()) { // Loop through all keys
+                        String key = jsonReader.nextName(); // Fetch the next key
+                        if (key.equals("success")) {
+                            success = jsonReader.nextBoolean();
+                        }
+                        else if(key.equals("message"))
+                        {
+                            responseMessage = jsonReader.nextString();
+                        }
+                        else
+                        {
+                            jsonReader.skipValue(); // Skip values of other keys
+                        }
+                    }
+                    jsonReader.close();
+                    myConnection.disconnect();
+                } else {
+                    // Error handling code goes here
                 }
             }
-
-            // TODO: register the new account here.
-            return true;
+            catch(Exception e)
+            {
+                Log.e("Error",e.toString());
+            }
+            return success;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
+            CommonUtil.showProgress(appContext, false);
 
             if (success) {
+                CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
+                    public Void call() {
+                        Intent i = new Intent(appContext, MainActivity.class);
+                        startActivity(i);
+                        return null;
+                    }
+                }) ;
                 finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+            }
+            else {
+                CommonUtil.showAlert(appContext, responseMessage);
             }
         }
 
         @Override
         protected void onCancelled() {
             mAuthTask = null;
-            showProgress(false);
+            CommonUtil.showProgress(appContext, false);
         }
     }
 }
