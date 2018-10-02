@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -40,15 +42,18 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password;
     private Spinner s_gender;
     private Button s_signup;
-    private ProgressDialog pDialog;
     private Context appContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-
         this.appContext = this;
+
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         // Spinner Setup
         s_gender = (Spinner) findViewById(R.id.s_gender);
@@ -154,26 +159,21 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private void InsertUser(User userData)
-    {
-
-        CommonUtil.showAlert(this, "test alert");
-
-        CommonUtil.showAlertMessageWithAction(this,"Please Confirm",
-                new Callable<Void>() {
-                    public Void call() {
-                        Toast.makeText(appContext, "Oopsss.",Toast.LENGTH_SHORT).show();
-                        return null;
-                    }
-        },
-        null
-        );
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public class UserSignUpTask extends AsyncTask<Void, Void, Boolean> {
 
         User signupUser;
-        String responseMessage = "";
+        String responseMessage = getResources().getString(R.string.connection_failed);
 
         UserSignUpTask(User userData) {
             signupUser = userData;
@@ -182,7 +182,7 @@ public class SignUpActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog = CommonUtil.showProgress(appContext, pDialog, true);
+            CommonUtil.showProgress(appContext, true);
         }
 
         @Override
@@ -245,7 +245,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            pDialog.dismiss();
+            CommonUtil.showProgress(appContext, false);
             if (success)
             {
                 CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
@@ -263,7 +263,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         @Override
         protected void onCancelled() {
-            CommonUtil.showProgress(appContext, pDialog, false);
+            CommonUtil.showProgress(appContext, false);
         }
     }
 }

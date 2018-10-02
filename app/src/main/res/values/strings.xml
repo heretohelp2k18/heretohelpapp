@@ -3,10 +3,15 @@
     <string name="serverUrl">http://192.168.1.9/heretohelp/webservice</string>
     <!--End of Server Configuration-->
 
-    <string name="app_name">chatme</string>
+    <!--Generic response-->
+    <string name="connection_failed">Connection Failed!</string>
+    <!--End of Generic response-->
+
+
+    <string name="app_name">Here To Help</string>
     <string name="title_activity_login">Sign in</string>
 
-    <!-- Strings related to login -->
+    <!-- Strings related to login and signup -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
     <string name="action_sign_in">Sign in or register</string>
@@ -18,8 +23,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+
     <string-array name="gender_array">
         <item>Male</item>
         <item>Female</item>

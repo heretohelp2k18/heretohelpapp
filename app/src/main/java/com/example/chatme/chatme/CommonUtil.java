@@ -9,6 +9,7 @@ import android.widget.ProgressBar;
 import java.util.concurrent.Callable;
 
 public class CommonUtil {
+    public static ProgressDialog pDialog;
 
     public static void showAlert(Context appContext, String message)
     {
@@ -61,7 +62,7 @@ public class CommonUtil {
                 }).show();
     }
 
-    public static ProgressDialog showProgress(Context appContext, ProgressDialog pDialog, final boolean show) {
+    public static void  showProgress(Context appContext, final boolean show) {
         if(show)
         {
             pDialog = new ProgressDialog(appContext);
@@ -69,12 +70,20 @@ public class CommonUtil {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
-            return pDialog;
         }
         else
         {
             pDialog.dismiss();
-            return null;
         }
     }
+
+//    CommonUtil.showAlertMessageWithAction(this,"Please Confirm",
+//            new Callable<Void>() {
+//        public Void call() {
+//            Toast.makeText(appContext, "Oopsss.",Toast.LENGTH_SHORT).show();
+//            return null;
+//        }
+//    },
+//            null
+//            );
 }
