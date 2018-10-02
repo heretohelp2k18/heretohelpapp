@@ -9,6 +9,7 @@ import android.widget.ProgressBar;
 import java.util.concurrent.Callable;
 
 public class CommonUtil {
+    public static User currentUser = new User();
     public static ProgressDialog pDialog;
 
     public static void showAlert(Context appContext, String message)

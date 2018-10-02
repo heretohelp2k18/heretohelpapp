@@ -54,40 +54,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        appContext = this;
         database = FirebaseDatabase.getInstance();
-        // Firebase Auth
-        this.mAuth = FirebaseAuth.getInstance();
 
-        currentUser = mAuth.getCurrentUser();
-        if(currentUser != null)
-        {
-            UserName = currentUser.getEmail();
-        }
-
-        // Base64 photo
-//        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        String userPhoto = prefs.getString("userPhoto", "");
-//        if(userPhoto != "")
-//        {
-//            this.myBase64Photo = userPhoto;
-//        }
-
-//        Intent myIntent = getIntent();
-//        UserName = myIntent.getStringExtra("username");
-//        if(UserName != null)
-//        {
-//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//            SharedPreferences.Editor editor = prefs.edit();
-//            editor.putString("PREF_USER", UserName);
-//            editor.commit();
-//        }
-//        else
-//        {
-//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//            UserName = prefs.getString("PREF_USER", "");
-//        }
-
-        this.appContext = this;
+        UserName = UserSessionUtil.getSession(appContext, "username");
 
         myRef = database.getReference("messages");
         myPhoto = database.getReference("photos");
@@ -188,32 +158,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        myPhoto.orderByChild("id").equalTo(currentUser.getUid()).limitToFirst(1).addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                UserPhoto user = dataSnapshot.getValue(UserPhoto.class);
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+//        myPhoto.orderByChild("id").equalTo(currentUser.getUid()).limitToFirst(1).addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//                UserPhoto user = dataSnapshot.getValue(UserPhoto.class);
+//            }
+//
+//            @Override
+//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
     }
 
     @Override

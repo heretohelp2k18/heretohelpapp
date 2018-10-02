@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbRequest;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -383,7 +384,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         }
                         else
                         {
-                            jsonReader.skipValue(); // Skip values of other keys
+                            UserSessionUtil.setSession(appContext, key, jsonReader.nextString());
                         }
                     }
                     jsonReader.close();
@@ -405,14 +406,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             CommonUtil.showProgress(appContext, false);
 
             if (success) {
-                CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
-                    public Void call() {
-                        Intent i = new Intent(appContext, MainActivity.class);
-                        startActivity(i);
-                        return null;
-                    }
-                }) ;
-                finish();
+                UserSessionUtil.setSession(appContext, "username", mEmail);
+                Intent i = new Intent(appContext, MainActivity.class);
+                startActivity(i);
             }
             else {
                 CommonUtil.showAlert(appContext, responseMessage);
