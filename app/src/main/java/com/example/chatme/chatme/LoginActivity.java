@@ -406,8 +406,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             CommonUtil.showProgress(appContext, false);
 
             if (success) {
-                UserSessionUtil.setSession(appContext, "username", mEmail);
-                Intent i = new Intent(appContext, MainActivity.class);
+                Intent i = new Intent(appContext, ChatBotActivity.class);
                 startActivity(i);
             }
             else {
