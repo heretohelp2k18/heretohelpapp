@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.Html;
 import android.widget.ProgressBar;
 
 import java.util.concurrent.Callable;
@@ -76,6 +77,17 @@ public class CommonUtil {
         {
             pDialog.dismiss();
         }
+    }
+
+    public static String stripHtml(String html) {
+        String refinedString = "";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            refinedString = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY).toString();
+        } else {
+            refinedString = Html.fromHtml(html).toString();
+        }
+        refinedString = refinedString.replaceAll("\\n"," ").trim();
+        return refinedString;
     }
 
 //    CommonUtil.showAlertMessageWithAction(this,"Please Confirm",

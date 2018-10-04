@@ -2,36 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ChatBotActivity"
-    tools:showIn="@layout/app_bar_chat_bot">
-    <LinearLayout
-        android:id="@+id/cbcomments"
+    tools:showIn="@layout/app_bar_chat_bot"
+    android:background="@color/white"
+    >
+    <ScrollView
+        android:id="@+id/cbsview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:gravity="bottom"
-        android:orientation="horizontal"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="72dp">
-        <ListView
-            android:id="@+id/lvcbMessages"
-            android:layout_width="match_parent"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/cbcomments"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:orientation="vertical"
+            android:padding="20dp"
             tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp" />
-    </LinearLayout>
+            tools:layout_editor_absoluteY="72dp"></LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/answerContainer"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="bottom"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="72dp">
+        tools:layout_editor_absoluteY="72dp"
+        android:background="@color/colorGreyBackground"
+        android:padding="20dp">
+
     </LinearLayout>
 
 </LinearLayout>
