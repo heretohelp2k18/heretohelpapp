@@ -70,7 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="#3F51B5"
+                android:background="@color/colorPrimaryDark"
                 android:text="SIGN IN"
                 android:textColor="#ffffff"
                 android:textStyle="bold" />
@@ -81,7 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="#3498db"
+                android:background="@color/colorPrimary"
                 android:text="SIGN UP"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />

@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Messages> messages = new ArrayList<>();
     private ListView lvMessages;
     private EditText txtUserComment;
-    private Button btnSend;
+    private ImageView btnSend;
     private CommentList commentAdapter;
     private String UserID = "";
     private String UserType = "";
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         lvMessages = (ListView) findViewById(R.id.lvMessages);
         lvMessages.setDivider(null);
         txtUserComment = (EditText) findViewById(R.id.txtUserComment);
-        btnSend = (Button) findViewById(R.id.btnSend);
+        btnSend = (ImageView) findViewById(R.id.btnSend);
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -65,7 +65,7 @@ public class CommentList extends ArrayAdapter<Messages>{
         botMsg.setTextColor(context.getResources().getColor(R.color.white));
 
         GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-        bgdrawable.setColor(Color.parseColor("#3F51B5"));
+        bgdrawable.setColor(Color.parseColor("#3498db"));
         chatbotContainer .addView(botMsg);
         return chatbotContainer;
     }

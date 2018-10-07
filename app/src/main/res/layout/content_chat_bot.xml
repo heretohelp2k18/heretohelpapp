@@ -23,7 +23,7 @@
             android:layout_weight="1"
             android:gravity="bottom"
             android:orientation="vertical"
-            android:padding="20dp"
+            android:padding="10dp"
             tools:layout_editor_absoluteX="8dp"
             tools:layout_editor_absoluteY="72dp"></LinearLayout>
     </ScrollView>
@@ -37,7 +37,7 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="72dp"
         android:background="@color/colorGreyBackground"
-        android:padding="20dp">
+        android:padding="10dp">
 
     </LinearLayout>
 

@@ -21,7 +21,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp" />
+                tools:layout_editor_absoluteY="8dp"
+                android:padding="10dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -42,12 +43,18 @@
             android:hint="Comment"
             android:inputType="textPersonName" />
 
-        <Button
+        <!--<Button-->
+            <!--android:id="@+id/btnSend"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text="Send" />-->
+        <ImageView
             android:id="@+id/btnSend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Send" />
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@android:drawable/ic_menu_send"
+            />
     </LinearLayout>
 
 </LinearLayout>

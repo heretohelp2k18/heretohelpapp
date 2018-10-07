@@ -9,7 +9,7 @@
 
 
     <string name="app_name">Here To Help</string>
-    <string name="title_activity_login">Sign in</string>
+    <string name="title_activity_login">Here To Help</string>
 
     <!-- Strings related to login and signup -->
     <string name="prompt_email">Email</string>
@@ -28,7 +28,7 @@
         <item>Male</item>
         <item>Female</item>
     </string-array>
-    <string name="title_activity_chat_bot">ChatBotActivity</string>
+    <string name="title_activity_chat_bot">Here To Help</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>

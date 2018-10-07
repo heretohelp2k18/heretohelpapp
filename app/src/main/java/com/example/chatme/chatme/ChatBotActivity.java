@@ -179,7 +179,7 @@ public class ChatBotActivity extends AppCompatActivity
         botMsg.setTextColor(getResources().getColor(R.color.white));
 
         GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-        bgdrawable.setColor(Color.parseColor("#3F51B5"));
+        bgdrawable.setColor(Color.parseColor("#3498db"));
         chatbotContainer .addView(botMsg);
         convoScrollDown();
     }
@@ -188,12 +188,19 @@ public class ChatBotActivity extends AppCompatActivity
     {
         final String message = CommonUtil.stripHtml(UserSessionUtil.getSession(appContext, tag));
         answerContainer = (LinearLayout) findViewById(R.id.answerContainer);
-        Button answer1 = new Button(appContext);
-        answer1.setText(message);
-        answer1.setLayoutParams(new LinearLayout.LayoutParams(
+        Button answer = new Button(appContext);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        answer1.setOnClickListener(new View.OnClickListener() {
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.RIGHT;
+        lp.setMargins(10, 10, 10, 10);
+        answer.setLayoutParams(lp);
+        answer.setBackgroundResource(R.drawable.bgrounded);
+        answer.setTextColor(getResources().getColor(R.color.white));
+        GradientDrawable bgdrawable = (GradientDrawable) answer.getBackground();
+        bgdrawable.setColor(Color.parseColor("#3498db"));
+        answer.setText(message);
+        answer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isQuestion)
@@ -214,7 +221,7 @@ public class ChatBotActivity extends AppCompatActivity
                 GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
                 bgdrawable.setColor(Color.parseColor("#DDDDDD"));
                 botMsg.setGravity(Gravity.RIGHT);
-                chatbotContainer .addView(botMsg);
+                chatbotContainer.addView(botMsg);
                 answerContainer.removeAllViewsInLayout();
                 if(action.equals("EVAL")){
                     EvaluateQuestions();
@@ -224,7 +231,8 @@ public class ChatBotActivity extends AppCompatActivity
                 }
             }
         });
-        answerContainer.addView(answer1);
+
+        answerContainer.addView(answer);
         convoScrollDown();
     }
 
