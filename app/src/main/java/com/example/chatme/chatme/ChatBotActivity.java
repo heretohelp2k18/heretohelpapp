@@ -24,6 +24,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -44,9 +51,15 @@ public class ChatBotActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     Context appContext;
+    FirebaseDatabase fireDB;
+    DatabaseReference fireRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
     ScrollView cbsView;
+    Double questionCounter = 0.0;
+    Double answerCounter = 0.0;
+    Boolean isQuestion = false;
+    ValueEventListener chatRoomListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +94,19 @@ public class ChatBotActivity extends AppCompatActivity
         txtfirstname.setText(fname);
         txtemail.setText(email);
 
-        FetchDataTask fetchTask = new FetchDataTask();
-        fetchTask.execute((Void) null);
+        if(UserSessionUtil.getSession(appContext, "usertype").equals("User")) {
+            FetchDataTask fetchTask = new FetchDataTask();
+            fetchTask.execute((Void) null);
+        } else {
+            fireDB = FirebaseDatabase.getInstance();
+            fireRef = fireDB.getReference("online");
+            DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
+            Online ol = new Online(true, true);
+            userRef.setValue(ol);
+            chatNotifListener();
+            userRef.onDisconnect().removeValue();
+            Toast.makeText(appContext, "We're finding you a member to talk to.", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void convoScrollDown() {
@@ -98,10 +122,28 @@ public class ChatBotActivity extends AppCompatActivity
     {
         // Message and Follow-up
         setBotMessage(UserSessionUtil.getSession(appContext, tag));
+        if(tag.charAt(0) == 'Q')
+        {
+            if(tag.equals("Q1"))
+            {
+                questionCounter = 0.0;
+                answerCounter = 0.0;
+            }
+            isQuestion = true;
+        }
+        else
+        {
+            isQuestion = false;
+        }
+
         String follow = UserSessionUtil.getSession(appContext, tag+"_follow");
         if((follow != null) && (!follow.equals("")))
         {
             BotRouter(follow);
+        }
+        else if(tag.equals("CONNECT"))
+        {
+            initializeChat();
         }
         else {
             //Answers
@@ -142,10 +184,9 @@ public class ChatBotActivity extends AppCompatActivity
         convoScrollDown();
     }
 
-    public void setBotAnswers(String tag, int value, final String action)
+    public void setBotAnswers(String tag, final int value, final String action)
     {
         final String message = CommonUtil.stripHtml(UserSessionUtil.getSession(appContext, tag));
-
         answerContainer = (LinearLayout) findViewById(R.id.answerContainer);
         Button answer1 = new Button(appContext);
         answer1.setText(message);
@@ -155,6 +196,12 @@ public class ChatBotActivity extends AppCompatActivity
         answer1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isQuestion)
+                {
+                    questionCounter ++;
+                    answerCounter += value;
+                }
+
                 TextView botMsg = new TextView(appContext);
                 botMsg.setText(message);
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -169,11 +216,134 @@ public class ChatBotActivity extends AppCompatActivity
                 botMsg.setGravity(Gravity.RIGHT);
                 chatbotContainer .addView(botMsg);
                 answerContainer.removeAllViewsInLayout();
-                BotRouter(action);
+                if(action.equals("EVAL")){
+                    EvaluateQuestions();
+                }
+                else {
+                    BotRouter(action);
+                }
             }
         });
         answerContainer.addView(answer1);
         convoScrollDown();
+    }
+
+    public void EvaluateQuestions()
+    {
+        Double result = (answerCounter / questionCounter) * 100;
+        if(result > 60)
+        {
+            BotRouter("EVALRESULT1");
+        }
+        else
+        {
+            BotRouter("EVALRESULT0");
+        }
+    }
+
+    public void initializeChat()
+    {
+        CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
+        fireDB = FirebaseDatabase.getInstance();
+
+        UserSessionUtil.setSession(appContext,"requesting", "yes");
+        UserSessionUtil.setSession(appContext, "chatroom", "");
+
+        // Setting up Chat Room
+        final DatabaseReference fireChatRoom = fireDB.getReference("chatroom");
+        final String chatRoomId = fireChatRoom.push().getKey();
+        UserSessionUtil.setSession(appContext, "chatroom", chatRoomId);
+        ChatRoom chatRoom = new ChatRoom(UserSessionUtil.getSession(appContext, "userid"), "0");
+        fireChatRoom.child(chatRoomId).setValue(chatRoom);
+        chatRoomListener = fireChatRoom.child(chatRoomId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
+                if(!chatRoom.getPsychoid().equals("0"))
+                {
+                    fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
+                    CommonUtil.dismissProgressDialog();
+                    Intent i = new Intent(appContext, MainActivity.class);
+                    startActivity(i);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        // End of Chat Room
+
+        // Broadcasting notification
+        final DatabaseReference fireChatNotif = fireDB.getReference("chatnotif");
+        fireRef = fireDB.getReference("online");
+        fireRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Online ol = snapshot.getValue(Online.class);
+                    if(ol.getAvailable() && (UserSessionUtil.getSession(appContext, "requesting").equals("yes"))) {
+                        String psyID = snapshot.getKey();
+                        UserDataNotif userData = new UserDataNotif(UserSessionUtil.getSession(appContext, "userfirstname"),
+                                UserSessionUtil.getSession(appContext, "userid"),
+                                UserSessionUtil.getSession(appContext, "usergender"),
+                                chatRoomId);
+                        String index = fireChatNotif.child(psyID).push().getKey();
+                        fireChatNotif.child(psyID).child(index).setValue(userData);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    public void chatNotifListener()
+    {
+        final String userid = UserSessionUtil.getSession(appContext, "userid");
+        final DatabaseReference fireChatNotif = fireDB.getReference("chatnotif").child(userid);
+        fireChatNotif.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    UserDataNotif userdn = snapshot.getValue(UserDataNotif.class);
+                    if(!userdn.getRead()) {
+                        Intent intentNotif = new Intent(appContext, MainActivity.class);
+                        intentNotif.putExtra("chatroomid", userdn.getChatroom());
+                        String content = "Name: " + userdn.getFirstname() + ", Gender: " + userdn.getGender();
+                        CommonUtil.showNotification(appContext, "New chat Request", content, intentNotif, R.drawable.chat);
+                        userdn.setRead(true);
+                        String key = snapshot.getKey();
+                        fireChatNotif.child(key).setValue(userdn);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist"))
+        {
+            fireDB = FirebaseDatabase.getInstance();
+            fireRef = fireDB.getReference("online");
+            DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
+            Online ol = new Online(true, true);
+            userRef.setValue(ol);
+            chatNotifListener();
+        }
     }
 
     @Override

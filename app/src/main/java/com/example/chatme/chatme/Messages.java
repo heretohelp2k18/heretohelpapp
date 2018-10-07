@@ -2,29 +2,43 @@ package com.example.chatme.chatme;
 
 public class Messages {
 
-    private String name;
-    private String comment;
-    private String photo;
-
-    public Messages()
-    {
-
+    public String getId() {
+        return id;
     }
 
-    public Messages(String name, String comment, String photo)
-    {
-        this.name = name;
-        this.comment = comment;
-        this.photo = photo;
-    }
-
-    public String getName() {
-        return name;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getComment() {
         return comment;
     }
 
-    public String getPhoto() { return photo; }
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getUsertype() {
+        return usertype;
+    }
+
+    public void setUsertype(String usertype) {
+        this.usertype = usertype;
+    }
+
+    private String id;
+    private String comment;
+    private String usertype;
+
+    public Messages()
+    {
+
+    }
+
+    public Messages(String id, String comment, String usertype)
+    {
+        this.id = id;
+        this.comment = comment;
+        this.usertype = usertype;
+    }
 }

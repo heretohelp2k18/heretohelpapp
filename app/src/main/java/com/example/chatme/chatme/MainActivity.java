@@ -31,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,11 +44,11 @@ public class MainActivity extends AppCompatActivity {
     private EditText txtUserComment;
     private Button btnSend;
     private CommentList commentAdapter;
-    private String UserName = "";
+    private String UserID = "";
+    private String UserType = "";
     Context appContext;
 
     private SharedPreferences prefs;
-    private String myBase64Photo = "";
     private FirebaseUser currentUser;
 
     @Override
@@ -56,13 +57,54 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         appContext = this;
         database = FirebaseDatabase.getInstance();
+        // Getting intent extras
+        Intent intent = getIntent();
+        if((intent.getStringExtra("chatroomid") != null) && (UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist")))
+        {
+            UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
+        }
 
-        UserName = UserSessionUtil.getSession(appContext, "username");
+        UserID = UserSessionUtil.getSession(appContext, "userid");
+        UserType = UserSessionUtil.getSession(appContext, "usertype");
 
-        myRef = database.getReference("messages");
-        myPhoto = database.getReference("photos");
+        if(UserType.equals("Psychologist")) {
+            final DatabaseReference fireChatRoom = myRef = database.getReference("chatroom").child(UserSessionUtil.getSession(appContext, "chatroom"));
+            fireChatRoom.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
+                    if ((chatRoom.getPsychoid().equals("0")) || (UserID.equals(chatRoom.getPsychoid()))) {
+                        if (chatRoom.getPsychoid().equals("0")) {
+                            fireChatRoom.child("psychoid").setValue(UserID);
+                        }
+                    } else {
+                        CommonUtil.showAlertWithCallback(appContext, "This request has been taken by other psychologist.", new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                UserSessionUtil.setSession(appContext, "chatroom", "");
+                                Intent intent = new Intent(appContext, ChatBotActivity.class);
+                                startActivity(intent);
+                                return null;
+                            }
+                        });
+                    }
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        loadMessages();
+    }
+
+    public void loadMessages()
+    {
+        myRef = database.getReference("chatroom").child(UserSessionUtil.getSession(appContext, "chatroom")).child("messages");
         lvMessages = (ListView) findViewById(R.id.lvMessages);
+        lvMessages.setDivider(null);
         txtUserComment = (EditText) findViewById(R.id.txtUserComment);
         btnSend = (Button) findViewById(R.id.btnSend);
         btnSend.setOnClickListener(new View.OnClickListener() {
@@ -71,13 +113,12 @@ public class MainActivity extends AppCompatActivity {
                 String comment = txtUserComment.getText().toString();
                 if(!comment.trim().equals("")) {
                     String id = myRef.push().getKey();
-                    Messages msg = new Messages(UserName, comment, myBase64Photo);
+                    Messages msg = new Messages(UserID, comment, UserType);
                     myRef.child(id).setValue(msg);
                     txtUserComment.setText("");
                 }
             }
         });
-
     }
 
     @Override
@@ -115,13 +156,13 @@ public class MainActivity extends AppCompatActivity {
 
                 //clearing the previous messages list
                 messages.clear();
-                String lastUserFetched = "";
+                //String lastUserFetched = "";
                 //iterating through all the nodes
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     //getting message
                     Messages message = postSnapshot.getValue(Messages.class);
                     //adding message to the list
-                    lastUserFetched = message.getName();
+                    //lastUserFetched = message.getName();
                     messages.add(message);
                 }
 
@@ -136,20 +177,6 @@ public class MainActivity extends AppCompatActivity {
                         lvMessages.setSelection(commentAdapter.getCount() - 1);
                     }
                 });
-
-                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(appContext);
-                mBuilder.setSmallIcon(R.drawable.chat);
-                mBuilder.setContentTitle("Chat Me!");
-                mBuilder.setContentText("New message from "+lastUserFetched);
-
-                Intent notificationIntent = new Intent(appContext, MainActivity.class);
-                PendingIntent contentIntent = PendingIntent.getActivity(appContext, 0, notificationIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-                mBuilder.setContentIntent(contentIntent);
-
-                // Add as notification
-                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.notify(0, mBuilder.build());
             }
 
             @Override
@@ -195,11 +222,6 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String userPhoto = prefs.getString("userPhoto", "");
-        if(userPhoto != "")
-        {
-            this.myBase64Photo = userPhoto;
-        }
     }
 
     @Override

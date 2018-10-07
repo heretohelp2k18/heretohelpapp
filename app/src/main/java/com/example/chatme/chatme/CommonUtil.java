@@ -1,18 +1,21 @@
 package com.example.chatme.chatme;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.text.Html;
-import android.widget.ProgressBar;
 
 import java.util.concurrent.Callable;
 
 public class CommonUtil {
     public static User currentUser = new User();
     public static ProgressDialog pDialog;
-
+    public static int notifCounter = 0;
     public static void showAlert(Context appContext, String message)
     {
         new AlertDialog.Builder(appContext)
@@ -79,6 +82,19 @@ public class CommonUtil {
         }
     }
 
+    public static void  showProgressCustom(Context appContext, final String message) {
+        pDialog = new ProgressDialog(appContext);
+        pDialog.setMessage(message);
+        pDialog.setIndeterminate(false);
+        pDialog.setCancelable(false);
+        pDialog.show();
+    }
+
+    public static void dismissProgressDialog()
+    {
+        pDialog.dismiss();
+    }
+
     public static String stripHtml(String html) {
         String refinedString = "";
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -88,6 +104,23 @@ public class CommonUtil {
         }
         refinedString = refinedString.replaceAll("\\n"," ").trim();
         return refinedString;
+    }
+
+    public static void showNotification(Context appContext, String title, String content, Intent notifIntent, int icon)
+    {
+        notifCounter++;
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(appContext);
+        mBuilder.setSmallIcon(icon);
+        mBuilder.setContentTitle(title);
+        mBuilder.setContentText(content);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(appContext, notifCounter, notifIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(contentIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(notifCounter, mBuilder.build());
     }
 
 //    CommonUtil.showAlertMessageWithAction(this,"Please Confirm",
