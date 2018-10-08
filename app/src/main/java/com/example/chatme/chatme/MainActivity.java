@@ -57,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         appContext = this;
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
         database = FirebaseDatabase.getInstance();
         // Getting intent extras
         Intent intent = getIntent();
@@ -124,23 +128,34 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.topbuttons, menu);
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.topbuttons, menu);
         return true;
     }
 
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle item selection
+//        switch (item.getItemId()) {
+//            case R.id.action_logout:
+//                FirebaseAuth.getInstance().signOut();
+//                Intent i = new Intent(appContext, LoginActivity.class);
+//                startActivity(i);
+//                return true;
+//            case R.id.action_account:
+//                Intent ac = new Intent(appContext, AccountActivity.class);
+//                startActivity(ac);
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
         switch (item.getItemId()) {
-            case R.id.action_logout:
-                FirebaseAuth.getInstance().signOut();
-                Intent i = new Intent(appContext, LoginActivity.class);
-                startActivity(i);
-                return true;
-            case R.id.action_account:
-                Intent ac = new Intent(appContext, AccountActivity.class);
-                startActivity(ac);
+            case android.R.id.home:
+                this.finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

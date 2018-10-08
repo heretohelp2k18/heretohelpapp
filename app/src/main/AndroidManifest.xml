@@ -28,7 +28,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="Chat" />
+            android:label="Chat"
+            android:parentActivityName=".ChatBotActivity"/>
         <activity
             android:name=".SignUpActivity"
             android:label="Sign Up"

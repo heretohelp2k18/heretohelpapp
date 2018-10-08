@@ -326,7 +326,7 @@ public class ChatBotActivity extends AppCompatActivity
                         intentNotif.putExtra("chatroomid", userdn.getChatroom());
                         String content = "Name: " + userdn.getFirstname() + ", Gender: " + userdn.getGender();
                         CommonUtil.showNotification(appContext, "New chat Request", content, intentNotif, R.drawable.chat);
-                        userdn.setRead(true);
+//                        userdn.setRead(true);
                         String key = snapshot.getKey();
                         fireChatNotif.child(key).setValue(userdn);
                     }
