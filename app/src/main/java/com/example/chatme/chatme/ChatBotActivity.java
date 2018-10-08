@@ -326,7 +326,7 @@ public class ChatBotActivity extends AppCompatActivity
                         intentNotif.putExtra("chatroomid", userdn.getChatroom());
                         String content = "Name: " + userdn.getFirstname() + ", Gender: " + userdn.getGender();
                         CommonUtil.showNotification(appContext, "New chat Request", content, intentNotif, R.drawable.chat);
-//                        userdn.setRead(true);
+                        userdn.setRead(true);
                         String key = snapshot.getKey();
                         fireChatNotif.child(key).setValue(userdn);
                     }
@@ -352,6 +352,12 @@ public class ChatBotActivity extends AppCompatActivity
             userRef.setValue(ol);
             chatNotifListener();
         }
+
+        if(!UserSessionUtil.isValidSession(appContext))
+        {
+            Intent i = new Intent(appContext, LoginActivity.class);
+            startActivity(i);
+        }
     }
 
     @Override
@@ -367,7 +373,7 @@ public class ChatBotActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.chat_bot, menu);
+//        getMenuInflater().inflate(R.menu.chat_bot, menu);
         return true;
     }
 
@@ -392,18 +398,14 @@ public class ChatBotActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
+        if (id == R.id.nav_history) {
 
         } else if (id == R.id.nav_manage) {
 
-//        } else if (id == R.id.nav_share) {
-//
-//        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_logout) {
+            UserSessionUtil.clearSession(appContext);
+            Intent i = new Intent(appContext, LoginActivity.class);
+            startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

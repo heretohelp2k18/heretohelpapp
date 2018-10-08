@@ -29,4 +29,19 @@ public class UserSessionUtil {
         editor.clear();
         editor.commit();
     }
+
+    public static Boolean isValidSession(Context appContext)
+    {
+        prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
+        String username = prefs.getString("username", "");
+        String token = prefs.getString("token", "");
+        if(username.trim().equals("") || token.trim().equals(""))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 }

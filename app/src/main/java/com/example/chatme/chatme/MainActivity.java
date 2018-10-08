@@ -237,7 +237,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!UserSessionUtil.isValidSession(appContext))
+        {
+            Intent i = new Intent(appContext, LoginActivity.class);
+            startActivity(i);
+        }
     }
 
     @Override

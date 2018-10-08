@@ -158,6 +158,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return;
         }
 
+        if(UserSessionUtil.isValidSession(appContext))
+        {
+            Intent i = new Intent(appContext, ChatBotActivity.class);
+            startActivity(i);
+        }
+
         getLoaderManager().initLoader(0, null, this);
     }
 
