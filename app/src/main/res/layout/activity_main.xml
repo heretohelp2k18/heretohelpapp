@@ -32,7 +32,8 @@
         android:gravity="bottom"
         android:orientation="horizontal"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="72dp">
+        tools:layout_editor_absoluteY="72dp"
+        android:padding="10dp">
 
         <EditText
             android:id="@+id/txtUserComment"
@@ -53,7 +54,8 @@
             android:id="@+id/btnSend"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_send"
+            android:src="@drawable/ic_send"
+            android:padding="5dp"
             />
     </LinearLayout>
 

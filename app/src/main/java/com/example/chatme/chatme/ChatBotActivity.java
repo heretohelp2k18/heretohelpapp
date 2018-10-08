@@ -66,6 +66,8 @@ public class ChatBotActivity extends AppCompatActivity
         setContentView(R.layout.activity_chat_bot);
         appContext = this;
         cbsView = (ScrollView) (findViewById(R.id.cbsview));
+        chatbotContainer = (LinearLayout) findViewById(R.id.cbcomments);
+        answerContainer = (LinearLayout) findViewById(R.id.answerContainer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -166,7 +168,6 @@ public class ChatBotActivity extends AppCompatActivity
 
     public void setBotMessage(String message)
     {
-        chatbotContainer = (LinearLayout) findViewById(R.id.cbcomments);
         TextView botMsg = new TextView(appContext);
         botMsg.setText(Html.fromHtml(message));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -187,7 +188,6 @@ public class ChatBotActivity extends AppCompatActivity
     public void setBotAnswers(String tag, final int value, final String action)
     {
         final String message = CommonUtil.stripHtml(UserSessionUtil.getSession(appContext, tag));
-        answerContainer = (LinearLayout) findViewById(R.id.answerContainer);
         Button answer = new Button(appContext);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -343,20 +343,25 @@ public class ChatBotActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist"))
-        {
-            fireDB = FirebaseDatabase.getInstance();
-            fireRef = fireDB.getReference("online");
-            DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
-            Online ol = new Online(true, true);
-            userRef.setValue(ol);
-            chatNotifListener();
-        }
 
         if(!UserSessionUtil.isValidSession(appContext))
         {
             Intent i = new Intent(appContext, LoginActivity.class);
             startActivity(i);
+        }
+        else
+        {
+            if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist"))
+            {
+                fireDB = FirebaseDatabase.getInstance();
+                fireRef = fireDB.getReference("online");
+                DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
+                Online ol = new Online(true, true);
+                userRef.setValue(ol);
+                chatNotifListener();
+            }
+
+            chatbotContainer.removeAllViewsInLayout();
         }
     }
 
