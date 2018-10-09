@@ -139,15 +139,14 @@
                     android:inputType="textPassword" />
 
             </android.support.design.widget.TextInputLayout>
-
             <LinearLayout
                 android:id="@+id/sign_up_picture_container"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:visibility="gone">
+                android:background="@color/colorPrimaryDark"
+                android:visibility="gone"
+                >
             </LinearLayout>
             <Button
                 android:id="@+id/sign_up_add_photo"
@@ -155,7 +154,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:background="@color/colorGreyBackground"
-                android:text="Capture ID and Documents"
+                android:text="Capture License"
                 android:visibility="gone"/>
             <Button
                 android:id="@+id/s_signup"

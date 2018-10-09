@@ -1,21 +1,36 @@
 package com.example.chatme.chatme;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 //import android.support.annotation.NonNull;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.os.StrictMode;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -26,6 +41,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -46,12 +64,16 @@ public class SignUpActivity extends AppCompatActivity {
     private LinearLayout photoContainer;
     private Button addPhoto;
     private Context appContext;
-
+    File nativeCaptureTempPhoto;
+    String imagePath;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
         this.appContext = this;
+
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
 
         photoContainer = (LinearLayout) findViewById(R.id.sign_up_picture_container);
         addPhoto = (Button) findViewById(R.id.sign_up_add_photo);
@@ -66,6 +88,14 @@ public class SignUpActivity extends AppCompatActivity {
             case "sign-psycho":
                 photoContainer.setVisibility(View.VISIBLE);
                 addPhoto.setVisibility(View.VISIBLE);
+
+                addPhoto.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        capturePhoto();
+                    }
+                });
+
                 break;
             case "sign-update":
                 break;
@@ -186,6 +216,79 @@ public class SignUpActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void capturePhoto()
+    {
+        try {
+            if (ActivityCompat.checkSelfPermission(SignUpActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(SignUpActivity.this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3004);
+            } else {
+                launchNativeCamera(3003);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void launchNativeCamera(int REQUEST_CODE) {
+        nativeCaptureTempPhoto = new File(Environment.getExternalStorageDirectory(), "browsedFile.png");
+        imagePath = nativeCaptureTempPhoto.getAbsolutePath();
+        Uri picUri = Uri.fromFile(nativeCaptureTempPhoto);
+        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, picUri);
+        startActivityForResult(intent, 3003);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Callback for Native Camera
+        if(resultCode == Activity.RESULT_OK) {
+            if(requestCode == 3003)
+            {
+                try {
+                    File imgFile = new  File(imagePath);
+                    if(imgFile.exists()){
+                        photoContainer.removeAllViews();
+
+                        Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                        ImageView myImage = new ImageView(this);
+                        myImage.setImageBitmap(myBitmap);
+                        myImage.setAdjustViewBounds(true);
+
+                        photoContainer.addView(myImage);
+
+//                        new UploadFileAsync().execute("");
+                    }
+
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private boolean checkIfAlreadyhavePermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
+    {
+        switch (requestCode) {
+            case 3004:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    launchNativeCamera(3003);
+                } else {
+                    //do something like displaying a message that he didn`t allow the app to access gallery and you wont be able to let him select from gallery
+                }
+                break;
         }
     }
 
