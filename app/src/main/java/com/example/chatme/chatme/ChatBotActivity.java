@@ -413,12 +413,20 @@ public class ChatBotActivity extends AppCompatActivity
 
         if (id == R.id.nav_history) {
 
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_logout) {
-            UserSessionUtil.clearSession(appContext);
-            Intent i = new Intent(appContext, LoginActivity.class);
+        } else if (id == R.id.nav_account) {
+            Intent i = new Intent(appContext,SignUpActivity.class);
+            i.putExtra("action","sign-update");
             startActivity(i);
+        } else if (id == R.id.nav_logout) {
+            CommonUtil.showAlertMessageWithAction(appContext, "Are you sure you want to log out?", new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    UserSessionUtil.clearSession(ChatBotActivity.this);
+                    Intent i = new Intent(ChatBotActivity.this, LoginActivity.class);
+                    startActivity(i);
+                    return null;
+                }
+            }, null);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

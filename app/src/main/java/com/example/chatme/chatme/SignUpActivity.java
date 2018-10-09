@@ -1,6 +1,7 @@
 package com.example.chatme.chatme;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -77,6 +78,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         photoContainer = (LinearLayout) findViewById(R.id.sign_up_picture_container);
         addPhoto = (Button) findViewById(R.id.sign_up_add_photo);
+        s_signup = (Button) findViewById(R.id.s_signup);
 
         Intent intentExtra = getIntent();
         String intentAction = intentExtra.getStringExtra("action");
@@ -88,16 +90,22 @@ public class SignUpActivity extends AppCompatActivity {
             case "sign-psycho":
                 photoContainer.setVisibility(View.VISIBLE);
                 addPhoto.setVisibility(View.VISIBLE);
-
                 addPhoto.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         capturePhoto();
                     }
                 });
-
                 break;
             case "sign-update":
+                try {
+                    getActionBar().setTitle("My Account");
+                } catch (Exception e)
+                {
+                    getSupportActionBar().setTitle("My Account");
+                    e.printStackTrace();
+                }
+                s_signup.setText("Update Account");
                 break;
         }
 
@@ -123,7 +131,6 @@ public class SignUpActivity extends AppCompatActivity {
         s_age = (EditText) findViewById(R.id.s_age);
 
         // Signup Action
-        s_signup = (Button) findViewById(R.id.s_signup);
         s_signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
