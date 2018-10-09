@@ -15,6 +15,16 @@ public class User {
 
     }
 
+    public String getUsertype() {
+        return usertype;
+    }
+
+    public void setUsertype(String usertype) {
+        this.usertype = usertype;
+    }
+
+    public String usertype;
+
     public int getId() {
         return id;
     }
