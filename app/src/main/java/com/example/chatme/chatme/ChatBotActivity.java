@@ -55,6 +55,8 @@ public class ChatBotActivity extends AppCompatActivity
     DatabaseReference fireRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
+    Boolean initialBotLoaded = false;
+
     ScrollView cbsView;
     Double questionCounter = 0.0;
     Double answerCounter = 0.0;
@@ -362,6 +364,12 @@ public class ChatBotActivity extends AppCompatActivity
             }
 
             chatbotContainer.removeAllViewsInLayout();
+            answerContainer.removeAllViewsInLayout();
+
+            if(initialBotLoaded)
+            {
+                BotRouter("G1");
+            }
         }
     }
 
@@ -500,6 +508,7 @@ public class ChatBotActivity extends AppCompatActivity
 
             if (success) {
                 BotRouter("G1");
+                initialBotLoaded = true;
             }
             else {
                 if(errorcode.equals("143"))
