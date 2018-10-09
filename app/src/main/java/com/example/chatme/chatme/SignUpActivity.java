@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -42,6 +43,8 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password;
     private Spinner s_gender;
     private Button s_signup;
+    private LinearLayout photoContainer;
+    private Button addPhoto;
     private Context appContext;
 
     @Override
@@ -49,6 +52,24 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
         this.appContext = this;
+
+        photoContainer = (LinearLayout) findViewById(R.id.sign_up_picture_container);
+        addPhoto = (Button) findViewById(R.id.sign_up_add_photo);
+
+        Intent intentExtra = getIntent();
+        String intentAction = intentExtra.getStringExtra("action");
+
+        switch (intentAction)
+        {
+            case "sign-in":
+                break;
+            case "sign-psycho":
+                photoContainer.setVisibility(View.VISIBLE);
+                addPhoto.setVisibility(View.VISIBLE);
+                break;
+            case "sign-update":
+                break;
+        }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);

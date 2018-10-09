@@ -86,6 +86,17 @@
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
+            <Button
+                android:id="@+id/psycho_sign_up_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/colorOrange"
+                android:text="SIGN UP AS PSYCHOLOGIST"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+
         </LinearLayout>
     </ScrollView>
 

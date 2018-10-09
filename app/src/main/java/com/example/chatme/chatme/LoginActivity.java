@@ -86,6 +86,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mLoginFormView;
     private Context appContext;
     private Button signup;
+    private Button psychoSignUpButton;
     // Firebase
     // private FirebaseAuth mAuth;
 
@@ -128,6 +129,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(appContext,SignUpActivity.class);
+                i.putExtra("action","sign-in");
+                startActivity(i);
+            }
+        });
+
+        psychoSignUpButton = (Button) findViewById(R.id.psycho_sign_up_button);
+        psychoSignUpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(appContext,SignUpActivity.class);
+                i.putExtra("action","sign-psycho");
                 startActivity(i);
             }
         });
