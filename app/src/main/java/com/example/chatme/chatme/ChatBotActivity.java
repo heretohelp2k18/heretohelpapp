@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.Html;
 import android.util.JsonReader;
 import android.util.Log;
@@ -45,6 +46,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 
 public class ChatBotActivity extends AppCompatActivity
@@ -253,7 +256,7 @@ public class ChatBotActivity extends AppCompatActivity
 
     public void initializeChat()
     {
-        CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
+//        CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
         fireDB = FirebaseDatabase.getInstance();
 
         UserSessionUtil.setSession(appContext,"requesting", "yes");
@@ -263,7 +266,9 @@ public class ChatBotActivity extends AppCompatActivity
         final DatabaseReference fireChatRoom = fireDB.getReference("chatroom");
         final String chatRoomId = fireChatRoom.push().getKey();
         UserSessionUtil.setSession(appContext, "chatroom", chatRoomId);
-        ChatRoom chatRoom = new ChatRoom(UserSessionUtil.getSession(appContext, "userid"), "0");
+        ChatRoom chatRoom = new ChatRoom(UserSessionUtil.getSession(appContext, "userid"),
+                                            UserSessionUtil.getSession(appContext, "userfirstname"),
+                                            "0","");
         fireChatRoom.child(chatRoomId).setValue(chatRoom);
         chatRoomListener = fireChatRoom.child(chatRoomId).addValueEventListener(new ValueEventListener() {
             @Override
@@ -273,6 +278,7 @@ public class ChatBotActivity extends AppCompatActivity
                 {
                     fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
                     CommonUtil.dismissProgressDialog();
+                    UserSessionUtil.setSession(appContext,"requesting", "no");
                     Intent i = new Intent(appContext, MainActivity.class);
                     startActivity(i);
                 }
@@ -284,6 +290,35 @@ public class ChatBotActivity extends AppCompatActivity
             }
         });
 
+        // Chat Room Request Expiry
+        TimerTask myTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                if(UserSessionUtil.getSession(appContext, "requesting").equals("yes"))
+                {
+//                    CommonUtil.dismissProgressDialog();
+//                    fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
+//                    CommonUtil.showAlert(ChatBotActivity.this, "No available psychologist.");
+//                    CommonUtil.showAlertMessageWithAction(ChatBotActivity.this, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
+//                        @Override
+//                        public Void call() throws Exception {
+//                            ChatBotActivity.this.initializeChat();
+//                            return null;
+//                        }
+//                    }, new Callable<Void>() {
+//                        @Override
+//                        public Void call() throws Exception {
+//                            ChatBotActivity.this.chatbotContainer.removeAllViews();
+//                            ChatBotActivity.this.answerContainer.removeAllViews();
+//                            ChatBotActivity.this.BotRouter("G1");
+//                            return null;
+//                        }
+//                    });
+                }
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(myTimerTask, Integer.parseInt(getResources().getString(R.string.psychoRequestTimeOut)));
         // End of Chat Room
 
         // Broadcasting notification

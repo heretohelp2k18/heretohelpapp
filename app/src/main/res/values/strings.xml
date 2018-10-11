@@ -4,6 +4,8 @@
     <string name="serverUrl">http://heretohelp2k18.000webhostapp.com/webservice</string>
     <!--End of Server Configuration-->
 
+    <string name="psychoRequestTimeOut">5000</string>
+
     <!--Generic response-->
     <string name="connection_failed">Connection Failed!</string>
     <!--End of Generic response-->
