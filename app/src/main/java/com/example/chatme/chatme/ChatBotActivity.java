@@ -151,7 +151,7 @@ public class ChatBotActivity extends AppCompatActivity
         }
         else if(tag.equals("CONNECT"))
         {
-            initializeChat();
+            initializeChat(true);
         }
         else {
             //Answers
@@ -255,7 +255,7 @@ public class ChatBotActivity extends AppCompatActivity
         }
     }
 
-    public void initializeChat()
+    public void initializeChat(Boolean newChatRoom)
     {
         //CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
         chatbotContainer.removeAllViews();
@@ -276,12 +276,19 @@ public class ChatBotActivity extends AppCompatActivity
         fireDB = FirebaseDatabase.getInstance();
 
         UserSessionUtil.setSession(appContext,"requesting", "yes");
-        UserSessionUtil.setSession(appContext, "chatroom", "");
 
         // Setting up Chat Room
+        String RoomId;
         final DatabaseReference fireChatRoom = fireDB.getReference("chatroom");
-        final String chatRoomId = fireChatRoom.push().getKey();
-        UserSessionUtil.setSession(appContext, "chatroom", chatRoomId);
+        if(newChatRoom) {
+            RoomId = fireChatRoom.push().getKey();
+            UserSessionUtil.setSession(appContext, "chatroom", RoomId);
+        } else {
+            RoomId = UserSessionUtil.getSession(appContext, "chatroom");
+        }
+
+        final String chatRoomId = RoomId;
+
         ChatRoom chatRoom = new ChatRoom(UserSessionUtil.getSession(appContext, "userid"),
                                             UserSessionUtil.getSession(appContext, "userfirstname"),
                                             "0","");
@@ -361,7 +368,7 @@ public class ChatBotActivity extends AppCompatActivity
         CommonUtil.showAlertMessageWithAction(appContext, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                ChatBotActivity.this.initializeChat();
+                ChatBotActivity.this.initializeChat(false);
                 return null;
             }
         }, new Callable<Void>() {
