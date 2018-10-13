@@ -63,6 +63,15 @@ public class CommonUtil {
                         if(negativeMethod == null) {
                             dialog.cancel();
                         }
+                        else
+                        {
+                            try {
+                                negativeMethod.call();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }).show();
     }

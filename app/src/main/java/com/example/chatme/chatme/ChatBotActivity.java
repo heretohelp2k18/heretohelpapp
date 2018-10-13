@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -256,7 +257,22 @@ public class ChatBotActivity extends AppCompatActivity
 
     public void initializeChat()
     {
-//        CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
+        //CommonUtil.showProgressCustom(appContext,"We're finding you a psychologist..");
+        chatbotContainer.removeAllViews();
+        answerContainer.removeAllViews();
+        ProgressBar progressBar = new ProgressBar(appContext);
+        LinearLayout.LayoutParams progressBarLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        progressBarLp.gravity = Gravity.CENTER;
+        progressBarLp.setMargins(0, 100,0, 40);
+        progressBar.setLayoutParams(progressBarLp);
+        chatbotContainer.addView(progressBar);
+        TextView findingText = new TextView(appContext);
+        findingText.setText("We're finding you a psychologist...");
+        findingText.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        chatbotContainer.addView(findingText);
+
         fireDB = FirebaseDatabase.getInstance();
 
         UserSessionUtil.setSession(appContext,"requesting", "yes");
@@ -294,27 +310,18 @@ public class ChatBotActivity extends AppCompatActivity
         TimerTask myTimerTask = new TimerTask() {
             @Override
             public void run() {
-                if(UserSessionUtil.getSession(appContext, "requesting").equals("yes"))
-                {
-//                    CommonUtil.dismissProgressDialog();
-//                    fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
-//                    CommonUtil.showAlert(ChatBotActivity.this, "No available psychologist.");
-//                    CommonUtil.showAlertMessageWithAction(ChatBotActivity.this, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
-//                        @Override
-//                        public Void call() throws Exception {
-//                            ChatBotActivity.this.initializeChat();
-//                            return null;
-//                        }
-//                    }, new Callable<Void>() {
-//                        @Override
-//                        public Void call() throws Exception {
-//                            ChatBotActivity.this.chatbotContainer.removeAllViews();
-//                            ChatBotActivity.this.answerContainer.removeAllViews();
-//                            ChatBotActivity.this.BotRouter("G1");
-//                            return null;
-//                        }
-//                    });
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(UserSessionUtil.getSession(ChatBotActivity.this, "requesting").equals("yes"))
+                        {
+                            fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
+                            ChatBotActivity.this.chatbotContainer.removeAllViews();
+                            ChatBotActivity.this.RetryPrompt();
+                        }
+                    }
+                });
+
             }
         };
         Timer timer = new Timer();
@@ -347,6 +354,23 @@ public class ChatBotActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    public void RetryPrompt()
+    {
+        CommonUtil.showAlertMessageWithAction(appContext, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                ChatBotActivity.this.initializeChat();
+                return null;
+            }
+        }, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                ChatBotActivity.this.BotRouter("G1");
+                return null;
+            }
+        });
     }
 
     public void chatNotifListener()
