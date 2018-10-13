@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#2980b9</color>
     <color name="colorAccent">#3498db</color>
     <color name="colorOrange">#e67e22</color>
+    <color name="colorRed">#e74c3c</color>
     <color name="colorGreyBackground">#DDDDDD</color>
     <color name="white">#FFFFFF</color>
     <color name="black_overlay">#66000000</color>

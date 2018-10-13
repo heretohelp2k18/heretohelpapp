@@ -1,12 +1,12 @@
 package com.example.chatme.chatme;
 
 public class UserDataNotif {
-    public String getFirstname() {
-        return firstname;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getId() {
@@ -41,7 +41,7 @@ public class UserDataNotif {
         this.chatroom = chatroom;
     }
 
-    private String firstname;
+    private String name;
     private String id;
     private String gender;
     private Boolean read;
@@ -52,9 +52,9 @@ public class UserDataNotif {
 
     }
 
-    public UserDataNotif(String fname, String id, String gender, String chatroom)
+    public UserDataNotif(String name, String id, String gender, String chatroom)
     {
-        this.firstname = fname;
+        this.name = name;
         this.id = id;
         this.gender = gender;
         this.read = false;

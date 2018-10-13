@@ -19,7 +19,7 @@
             android:layout_width="@android:dimen/thumbnail_height"
             android:layout_height="@android:dimen/thumbnail_height"
             android:layout_marginTop="16dp"
-            app:srcCompat="@drawable/avatar" />
+            app:srcCompat="@drawable/boy" />
 
         <Button
             android:id="@+id/action_save_image"

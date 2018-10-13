@@ -11,7 +11,7 @@
         android:layout_height="45dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        app:srcCompat="@drawable/avatar" />
+        app:srcCompat="@drawable/boy" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"

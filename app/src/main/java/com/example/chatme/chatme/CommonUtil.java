@@ -132,13 +132,10 @@ public class CommonUtil {
         manager.notify(notifCounter, mBuilder.build());
     }
 
-//    CommonUtil.showAlertMessageWithAction(this,"Please Confirm",
-//            new Callable<Void>() {
-//        public Void call() {
-//            Toast.makeText(appContext, "Oopsss.",Toast.LENGTH_SHORT).show();
-//            return null;
-//        }
-//    },
-//            null
-//            );
+    public static int dpToPx(Context appContext, int dp) {
+        float density = appContext.getResources()
+                .getDisplayMetrics()
+                .density;
+        return Math.round((float) dp * density);
+    }
 }

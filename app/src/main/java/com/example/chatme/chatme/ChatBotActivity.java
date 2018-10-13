@@ -2,14 +2,19 @@ package com.example.chatme.chatme;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.Html;
 import android.util.JsonReader;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -22,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -102,19 +108,24 @@ public class ChatBotActivity extends AppCompatActivity
         txtfirstname.setText(fname);
         txtemail.setText(email);
 
-        if(UserSessionUtil.getSession(appContext, "usertype").equals("User")) {
-            FetchDataTask fetchTask = new FetchDataTask();
-            fetchTask.execute((Void) null);
-        } else {
-            fireDB = FirebaseDatabase.getInstance();
-            fireRef = fireDB.getReference("online");
-            DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
-            Online ol = new Online(true, true);
-            userRef.setValue(ol);
-            chatNotifListener();
-            userRef.onDisconnect().removeValue();
-            Toast.makeText(appContext, "We're finding you a member to talk to.", Toast.LENGTH_LONG).show();
-        }
+    }
+
+    public void showWaitingLoader()
+    {
+        chatbotContainer.removeAllViews();
+        answerContainer.removeAllViews();
+        ProgressBar progressBar = new ProgressBar(appContext);
+        LinearLayout.LayoutParams progressBarLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        progressBarLp.gravity = Gravity.CENTER;
+        progressBarLp.setMargins(0, 100,0, 40);
+        progressBar.setLayoutParams(progressBarLp);
+        chatbotContainer.addView(progressBar);
+        TextView findingText = new TextView(appContext);
+        findingText.setText("We're finding you a member to talk to.");
+        findingText.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        chatbotContainer.addView(findingText);
     }
 
     public void convoScrollDown() {
@@ -265,7 +276,7 @@ public class ChatBotActivity extends AppCompatActivity
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         progressBarLp.gravity = Gravity.CENTER;
-        progressBarLp.setMargins(0, 100,0, 40);
+        progressBarLp.setMargins(0, CommonUtil.dpToPx(appContext, 100),0, 40);
         progressBar.setLayoutParams(progressBarLp);
         chatbotContainer.addView(progressBar);
         TextView findingText = new TextView(appContext);
@@ -345,12 +356,12 @@ public class ChatBotActivity extends AppCompatActivity
                     Online ol = snapshot.getValue(Online.class);
                     if(ol.getAvailable() && (UserSessionUtil.getSession(appContext, "requesting").equals("yes"))) {
                         String psyID = snapshot.getKey();
-                        UserDataNotif userData = new UserDataNotif(UserSessionUtil.getSession(appContext, "userfirstname"),
+                        UserDataNotif userData = new UserDataNotif(UserSessionUtil.getSession(appContext, "userfirstname") + " " + UserSessionUtil.getSession(appContext, "userlastname"),
                                 UserSessionUtil.getSession(appContext, "userid"),
                                 UserSessionUtil.getSession(appContext, "usergender"),
                                 chatRoomId);
-                        String index = fireChatNotif.child(psyID).push().getKey();
-                        fireChatNotif.child(psyID).child(index).setValue(userData);
+                        fireRef.child(psyID).child("available").setValue(false);
+                        fireChatNotif.child(psyID).setValue(userData);
                     }
                 }
             }
@@ -387,17 +398,88 @@ public class ChatBotActivity extends AppCompatActivity
         fireChatNotif.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    UserDataNotif userdn = snapshot.getValue(UserDataNotif.class);
-                    if(!userdn.getRead()) {
-                        Intent intentNotif = new Intent(appContext, MainActivity.class);
-                        intentNotif.putExtra("chatroomid", userdn.getChatroom());
-                        String content = "Name: " + userdn.getFirstname() + ", Gender: " + userdn.getGender();
-                        CommonUtil.showNotification(appContext, "New chat Request", content, intentNotif, R.drawable.chat);
-                        userdn.setRead(true);
-                        String key = snapshot.getKey();
-                        fireChatNotif.child(key).setValue(userdn);
+                final UserDataNotif userdn = dataSnapshot.getValue(UserDataNotif.class);
+                if(userdn != null) {
+                    chatbotContainer.removeAllViews();
+                    // Image Avatar
+                    ImageView imgAvatar = new ImageView(appContext);
+                    Bitmap bitmap;
+                    if (userdn.getGender().equals("Male")) {
+                        bitmap = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.boy);
+                    } else {
+                        bitmap = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.girl);
                     }
+
+                    RoundedBitmapDrawable roundDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+                    roundDrawable.setCircular(true);
+                    imgAvatar.setImageDrawable(roundDrawable);
+                    LinearLayout.LayoutParams lpAvatar = new LinearLayout.LayoutParams(
+                            CommonUtil.dpToPx(appContext, 150),
+                            CommonUtil.dpToPx(appContext, 150));
+                    lpAvatar.gravity = Gravity.CENTER;
+                    lpAvatar.setMargins(10, CommonUtil.dpToPx(appContext,100), 10, 20);
+                    imgAvatar.setLayoutParams(lpAvatar);
+
+                    chatbotContainer.addView(imgAvatar);
+
+                    // Name text
+                    TextView userNameText = new TextView(appContext);
+                    userNameText.setText(userdn.getName());
+                    userNameText.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+                    userNameText.setTextSize(TypedValue.COMPLEX_UNIT_SP,24);
+                    LinearLayout.LayoutParams lpName = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lpName.setMargins(10, CommonUtil.dpToPx(appContext,10), 10, CommonUtil.dpToPx(appContext,50));
+                    userNameText.setLayoutParams(lpName);
+                    chatbotContainer.addView(userNameText);
+
+                    // ACCEPT BUTTON
+                    Button acceptBtn = new Button(appContext);
+                    acceptBtn.setText("ACCEPT");
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.gravity = Gravity.CENTER;
+                    lp.setMargins(10, 10, 10, 10);
+                    acceptBtn.setLayoutParams(lp);
+                    acceptBtn.setBackgroundResource(R.drawable.bgrounded);
+                    acceptBtn.setTextColor(getResources().getColor(R.color.white));
+                    GradientDrawable bgdrawable = (GradientDrawable) acceptBtn.getBackground();
+                    bgdrawable.setColor(getResources().getColor(R.color.colorPrimaryDark));
+                    acceptBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intentNotif = new Intent(appContext, MainActivity.class);
+                            intentNotif.putExtra("chatroomid", userdn.getChatroom());
+                            startActivity(intentNotif);
+                        }
+                    });
+                    chatbotContainer.addView(acceptBtn);
+
+                    // DENY BUTTON
+                    Button denyBtn = new Button(appContext);
+                    denyBtn.setText("DENY");
+                    LinearLayout.LayoutParams lpd = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lpd.gravity = Gravity.CENTER;
+                    lpd.setMargins(10, 10, 10, 10);
+                    denyBtn.setLayoutParams(lpd);
+                    denyBtn.setBackgroundResource(R.drawable.bgrounded);
+                    denyBtn.setTextColor(getResources().getColor(R.color.white));
+                    GradientDrawable bgddrawable = (GradientDrawable) denyBtn.getBackground();
+                    bgddrawable.setColor(getResources().getColor(R.color.colorRed));
+                    denyBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            fireChatNotif.removeValue();
+                            showWaitingLoader();
+                            DatabaseReference fireOnline = fireDB.getReference("online").child(UserSessionUtil.getSession(appContext,"userid"));
+                            fireOnline.child("available").setValue(true);
+                        }
+                    });
+                    chatbotContainer.addView(denyBtn);
                 }
             }
 
@@ -406,6 +488,11 @@ public class ChatBotActivity extends AppCompatActivity
 
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -427,10 +514,13 @@ public class ChatBotActivity extends AppCompatActivity
                 Online ol = new Online(true, true);
                 userRef.setValue(ol);
                 chatNotifListener();
+                userRef.onDisconnect().removeValue();
+                showWaitingLoader();
             }
-
-            chatbotContainer.removeAllViewsInLayout();
-            answerContainer.removeAllViewsInLayout();
+            else if(UserSessionUtil.getSession(appContext, "usertype").equals("User")) {
+                FetchDataTask fetchTask = new FetchDataTask();
+                fetchTask.execute((Void) null);
+            }
 
             if(initialBotLoaded)
             {
