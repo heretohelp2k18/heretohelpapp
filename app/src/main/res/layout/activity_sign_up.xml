@@ -31,7 +31,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="First Name"
-                    android:inputType="text|textPersonName" />
+                    android:inputType="text|textPersonName"
+                    android:maxLength="25" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -46,7 +47,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Middle Name"
-                    android:inputType="text|textPersonName" />
+                    android:inputType="text|textPersonName"
+                    android:maxLength="25" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -61,7 +63,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Last Name"
-                    android:inputType="text|textPersonName" />
+                    android:inputType="text|textPersonName"
+                    android:maxLength="25" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -76,7 +79,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Age"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="3" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -100,10 +104,20 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Email Address"
-                    android:inputType="textEmailAddress" />
+                    android:inputType="textEmailAddress"
+                    android:maxLength="50" />
 
             </android.support.design.widget.TextInputLayout>
 
+            <TextView
+                android:id="@+id/passwordNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_weight="1"
+                android:text="@string/password_note"
+                android:visibility="gone"
+                android:paddingLeft="5dp"/>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -116,7 +130,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Password"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:maxLength="50" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -131,7 +146,8 @@
                     android:layout_marginTop="16dp"
                     android:ems="10"
                     android:hint="Confirm Password"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:maxLength="50" />
 
             </android.support.design.widget.TextInputLayout>
             <LinearLayout

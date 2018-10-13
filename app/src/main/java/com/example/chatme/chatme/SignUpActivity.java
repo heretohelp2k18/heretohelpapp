@@ -34,6 +34,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -72,6 +73,7 @@ public class SignUpActivity extends AppCompatActivity {
     private Context appContext;
     File nativeCaptureTempPhoto;
     String imagePath;
+    private Boolean updateAccount;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,39 +86,6 @@ public class SignUpActivity extends AppCompatActivity {
         photoContainer = (LinearLayout) findViewById(R.id.sign_up_picture_container);
         addPhoto = (Button) findViewById(R.id.sign_up_add_photo);
         s_signup = (Button) findViewById(R.id.s_signup);
-
-        Intent intentExtra = getIntent();
-        String intentAction = intentExtra.getStringExtra("action");
-
-        switch (intentAction)
-        {
-            case "sign-in":
-                break;
-            case "sign-psycho":
-                signupUserType = "Psychologist";
-                photoContainer.setVisibility(View.VISIBLE);
-                addPhoto.setVisibility(View.VISIBLE);
-                addPhoto.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        capturePhoto();
-                    }
-                });
-                break;
-            case "sign-update":
-                try {
-                    getActionBar().setTitle("My Account");
-                } catch (Exception e)
-                {
-                    getSupportActionBar().setTitle("My Account");
-                    e.printStackTrace();
-                }
-                s_signup.setText("Update Account");
-                break;
-        }
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
 
         // Spinner Setup
         s_gender = (Spinner) findViewById(R.id.s_gender);
@@ -136,6 +105,46 @@ public class SignUpActivity extends AppCompatActivity {
         s_last_name = (EditText) findViewById(R.id.s_last_name);
         s_age = (EditText) findViewById(R.id.s_age);
 
+        Intent intentExtra = getIntent();
+        String intentAction = intentExtra.getStringExtra("action");
+
+        switch (intentAction)
+        {
+            case "sign-in":
+                updateAccount = false;
+                break;
+            case "sign-psycho":
+                updateAccount = false;
+                signupUserType = "Psychologist";
+                photoContainer.setVisibility(View.VISIBLE);
+                addPhoto.setVisibility(View.VISIBLE);
+                addPhoto.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        capturePhoto();
+                    }
+                });
+                break;
+            case "sign-update":
+                updateAccount = true;
+                TextView passwordNote = (TextView) findViewById(R.id.passwordNote);
+                passwordNote.setVisibility(View.VISIBLE);
+                try {
+                    getActionBar().setTitle("My Account");
+                } catch (Exception e)
+                {
+                    getSupportActionBar().setTitle("My Account");
+                    e.printStackTrace();
+                }
+
+                populateSignUpFormFromSession();
+                s_signup.setText("Update Account");
+                break;
+        }
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
         // Signup Action
         s_signup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,6 +159,12 @@ public class SignUpActivity extends AppCompatActivity {
 
                 Boolean error = false;
                 View focusView = null;
+                Boolean validatePasswordFields = true;
+                if(updateAccount && (TextUtils.isEmpty(s_password_val) && TextUtils.isEmpty(s_confirm_password_val)))
+                {
+                    validatePasswordFields = false;
+                }
+
                 if(TextUtils.isEmpty(s_first_name_val))
                 {
                     s_first_name.setError(getString(R.string.error_field_required));
@@ -180,19 +195,19 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView = s_email_address;
                     error = true;
                 }
-                else if(TextUtils.isEmpty(s_password_val))
+                else if(TextUtils.isEmpty(s_password_val) && validatePasswordFields)
                 {
                     s_password.setError(getString(R.string.error_field_required));
                     focusView = s_password;
                     error = true;
                 }
-                else if(TextUtils.isEmpty(s_confirm_password_val))
+                else if(TextUtils.isEmpty(s_confirm_password_val) && validatePasswordFields)
                 {
                     s_confirm_password.setError(getString(R.string.error_field_required));
                     focusView = s_confirm_password;
                     error = true;
                 }
-                else if(!s_password_val.equals(s_confirm_password_val) || (s_password_val.length()<6))
+                else if((!s_password_val.equals(s_confirm_password_val) || (s_password_val.length()<6)) && validatePasswordFields)
                 {
                     s_confirm_password.setError("Passwords do not match, must be atleast 6 characters.");
                     focusView = s_confirm_password;
@@ -221,11 +236,30 @@ public class SignUpActivity extends AppCompatActivity {
                     signupUser.setPassword(s_password_val);
                     signupUser.setUsertype(signupUserType);
 
-                    UserSignUpTask signUpTask = new UserSignUpTask(signupUser);
+                    String service = "register";
+                    if(updateAccount) {
+                        service = "UpdateAccount";
+                    }
+
+                    UserSignUpTask signUpTask = new UserSignUpTask(signupUser, service);
                     signUpTask.execute((Void) null);
                 }
             }
         });
+    }
+
+    public void populateSignUpFormFromSession()
+    {
+        if(UserSessionUtil.getSession(appContext, "usergender").equals("Male")) {
+            s_gender.setSelection(0);
+        } else {
+            s_gender.setSelection(1);
+        }
+        s_email_address.setText(UserSessionUtil.getSession(appContext,"useremail"));
+        s_first_name.setText(UserSessionUtil.getSession(appContext,"userfirstname"));
+        s_middle_name.setText(UserSessionUtil.getSession(appContext,"usermiddlename"));
+        s_last_name.setText(UserSessionUtil.getSession(appContext,"userlastname"));
+        s_age.setText(UserSessionUtil.getSession(appContext,"userage"));
     }
 
     @Override
@@ -317,10 +351,12 @@ public class SignUpActivity extends AppCompatActivity {
     public class UserSignUpTask extends AsyncTask<Void, Void, Boolean> {
 
         User signupUser;
+        String serviceName;
         String responseMessage = getResources().getString(R.string.connection_failed);
 
-        UserSignUpTask(User userData) {
+        UserSignUpTask(User userData, String service) {
             signupUser = userData;
+            serviceName = service;
         }
 
         @Override
@@ -345,10 +381,14 @@ public class SignUpActivity extends AppCompatActivity {
                 http_params.add(new BasicNameValuePair("password", signupUser.getPassword()));
                 http_params.add(new BasicNameValuePair("usertype", signupUser.getUsertype()));
                 http_params.add(new BasicNameValuePair("idimage", psychIDFileName));
+                if(updateAccount)
+                {
+                    http_params.add(new BasicNameValuePair("id", UserSessionUtil.getSession(appContext,"userid")));
+                }
 
                 String paramString = URLEncodedUtils.format(http_params, "utf-8");
                 Log.e("paramString",paramString);
-                String server_url = getResources().getString(R.string.serverUrl) + "/register?"+paramString;
+                String server_url = getResources().getString(R.string.serverUrl) + "/"+ serviceName +"?"+paramString;
 
                 URL server = new URL(server_url);
                 // Create connection
@@ -393,13 +433,29 @@ public class SignUpActivity extends AppCompatActivity {
             CommonUtil.showProgress(appContext, false);
             if (success)
             {
-                CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
-                    public Void call() {
-                        Intent i = new Intent(appContext, MainActivity.class);
-                        startActivity(i);
-                        return null;
-                    }
-                }) ;
+                if(!updateAccount) {
+                    CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
+                        public Void call() {
+                            Intent i = new Intent(appContext, LoginActivity.class);
+                            startActivity(i);
+                            return null;
+                        }
+                    });
+                } else {
+                    CommonUtil.showAlert(appContext, responseMessage);
+
+                    // Updating session
+                    UserSessionUtil.setSession(appContext, "usergender", s_gender.getSelectedItem().toString());
+                    UserSessionUtil.setSession(appContext,"useremail", s_email_address.getText().toString());
+                    UserSessionUtil.setSession(appContext,"username", s_email_address.getText().toString());
+                    UserSessionUtil.setSession(appContext,"userfirstname", s_first_name.getText().toString());
+                    UserSessionUtil.setSession(appContext,"usermiddlename", s_middle_name.getText().toString());
+                    UserSessionUtil.setSession(appContext,"userlastname", s_last_name.getText().toString());
+                    UserSessionUtil.setSession(appContext,"userage", s_age.getText().toString());
+
+                    s_password.setText("");
+                    s_confirm_password.setText("");
+                }
             }
             else{
                 CommonUtil.showAlert(appContext, responseMessage);
