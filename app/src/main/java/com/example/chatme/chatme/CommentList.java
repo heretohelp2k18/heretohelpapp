@@ -62,10 +62,9 @@ public class CommentList extends ArrayAdapter<Messages>{
         lp.setMargins(10, 10, 10, 10);
         botMsg.setLayoutParams(lp);
         botMsg.setBackgroundResource(R.drawable.bgroundedchatleft);
-        botMsg.setTextColor(context.getResources().getColor(R.color.white));
 
         GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-        bgdrawable.setColor(Color.parseColor("#3498db"));
+        bgdrawable.setColor(Color.parseColor("#DDDDDD"));
         chatbotContainer .addView(botMsg);
         return chatbotContainer;
     }
@@ -83,8 +82,9 @@ public class CommentList extends ArrayAdapter<Messages>{
         lp.setMargins(10, 10, 10, 10);
         botMsg.setLayoutParams(lp);
         botMsg.setBackgroundResource(R.drawable.bgroundedchatright);
+        botMsg.setTextColor(Color.parseColor("#FFFFFF"));
         GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-        bgdrawable.setColor(Color.parseColor("#DDDDDD"));
+        bgdrawable.setColor(Color.parseColor("#3498db"));
         botMsg.setGravity(Gravity.RIGHT);
         chatbotContainer .addView(botMsg);
         return chatbotContainer;

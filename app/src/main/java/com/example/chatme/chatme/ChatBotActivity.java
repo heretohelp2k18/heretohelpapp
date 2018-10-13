@@ -183,10 +183,9 @@ public class ChatBotActivity extends AppCompatActivity
         lp.setMargins(10, 10, 10, 10);
         botMsg.setLayoutParams(lp);
         botMsg.setBackgroundResource(R.drawable.bgroundedleft);
-        botMsg.setTextColor(getResources().getColor(R.color.white));
 
         GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-        bgdrawable.setColor(Color.parseColor("#3498db"));
+        bgdrawable.setColor(Color.parseColor("#DDDDDD"));
         chatbotContainer .addView(botMsg);
         convoScrollDown();
     }
@@ -223,9 +222,10 @@ public class ChatBotActivity extends AppCompatActivity
                 lp.gravity = Gravity.RIGHT;
                 lp.setMargins(10, 10, 10, 10);
                 botMsg.setLayoutParams(lp);
+                botMsg.setTextColor(getResources().getColor(R.color.white));
                 botMsg.setBackgroundResource(R.drawable.bgroundedright);
                 GradientDrawable bgdrawable = (GradientDrawable) botMsg.getBackground();
-                bgdrawable.setColor(Color.parseColor("#DDDDDD"));
+                bgdrawable.setColor(Color.parseColor("#3498db"));
                 botMsg.setGravity(Gravity.RIGHT);
                 chatbotContainer.addView(botMsg);
                 answerContainer.removeAllViewsInLayout();
