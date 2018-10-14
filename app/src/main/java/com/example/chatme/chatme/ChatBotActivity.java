@@ -606,6 +606,9 @@ public class ChatBotActivity extends AppCompatActivity
             CommonUtil.showAlertMessageWithAction(appContext, "Are you sure you want to log out?", new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
+                    fireRef = fireDB.getReference("online");
+                    DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
+                    userRef.removeValue();
                     UserSessionUtil.clearSession(ChatBotActivity.this);
                     Intent i = new Intent(ChatBotActivity.this, LoginActivity.class);
                     startActivity(i);
