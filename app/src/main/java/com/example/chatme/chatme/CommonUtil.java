@@ -5,10 +5,16 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.VibrationEffect;
 import android.support.v4.app.NotificationCompat;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.text.Html;
+import android.os.Vibrator;
 
 import java.util.concurrent.Callable;
 
@@ -137,5 +143,24 @@ public class CommonUtil {
                 .getDisplayMetrics()
                 .density;
         return Math.round((float) dp * density);
+    }
+
+    public static void notifSound(Context appContext)
+    {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Ringtone notifSound = RingtoneManager.getRingtone(appContext, notification);
+        notifSound.play();
+    }
+
+    public static void vibrateDevice(Context appContext)
+    {
+        Vibrator v = (Vibrator) appContext.getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500,VibrationEffect.DEFAULT_AMPLITUDE));
+        }else{
+            //deprecated in API 26
+            v.vibrate(500);
+        }
     }
 }

@@ -75,9 +75,6 @@ public class ChatBotActivity extends AppCompatActivity
     Boolean isQuestion = false;
     ValueEventListener chatRoomListener;
 
-    Uri notification;
-    Ringtone notifSound;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -434,11 +431,9 @@ public class ChatBotActivity extends AppCompatActivity
                 final UserDataNotif userdn = dataSnapshot.getValue(UserDataNotif.class);
                 if(userdn != null) {
                     chatbotContainer.removeAllViews();
-                    // Notification sound
-                    notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    notifSound = RingtoneManager.getRingtone(appContext, notification);
-                    notifSound.play();
-
+                    // Notification sound and vibrate
+                    CommonUtil.notifSound(appContext);
+                    CommonUtil.vibrateDevice(appContext);
                     // Image Avatar
                     ImageView imgAvatar = new ImageView(appContext);
                     Bitmap bitmap;
