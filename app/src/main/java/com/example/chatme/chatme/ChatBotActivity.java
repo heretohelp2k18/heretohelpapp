@@ -255,7 +255,7 @@ public class ChatBotActivity extends AppCompatActivity
     public void EvaluateQuestions()
     {
         Double result = (answerCounter / questionCounter) * 100;
-        if(result > 60)
+        if(result >= Integer.parseInt(getResources().getString(R.string.needAPsychoPercentage)))
         {
             BotRouter("EVALRESULT1");
         }
@@ -596,7 +596,8 @@ public class ChatBotActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_history) {
-
+            Intent i = new Intent(appContext,ChatHistoryActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_account) {
             Intent i = new Intent(appContext,SignUpActivity.class);
             i.putExtra("action","sign-update");

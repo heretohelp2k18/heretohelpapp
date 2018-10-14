@@ -1,19 +1,13 @@
 package com.example.chatme.chatme;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.support.annotation.NonNull;
 import android.text.Html;
-import android.util.Base64;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -23,7 +17,7 @@ public class CommentList extends ArrayAdapter<Messages>{
     List<Messages> comments;
 
     public CommentList(Activity context, List<Messages> comments) {
-        super(context, R.layout.commentlist, comments);
+        super(context, R.layout.chat_history_list, comments);
         this.context = context;
         this.comments = comments;
     }
@@ -31,7 +25,7 @@ public class CommentList extends ArrayAdapter<Messages>{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 //        LayoutInflater inflater = context.getLayoutInflater();
-//        View listViewItem = inflater.inflate(R.layout.commentlist, null, true);
+//        View listViewItem = inflater.inflate(R.layout.chat_history_list, null, true);
 //
 //        TextView textViewName = (TextView) listViewItem.findViewById(R.id.txtName);
 //        TextView textViewComment = (TextView) listViewItem.findViewById(R.id.txtComment);

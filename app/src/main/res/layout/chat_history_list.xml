@@ -6,11 +6,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
-        android:id="@+id/imgcommentprofile"
+        android:id="@+id/imgprofile"
         android:layout_width="50dp"
         android:layout_height="45dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
         app:srcCompat="@drawable/boy" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -31,10 +31,14 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/txtComment"
+            android:id="@+id/txtDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:text="TextView" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
     </LinearLayout>
 </LinearLayout>

@@ -4,7 +4,11 @@
     <!--<string name="serverUrl">http://heretohelp2k18.000webhostapp.com/webservice</string>-->
     <!--End of Server Configuration-->
 
+    <!--Time out of chat request-->
     <string name="psychoRequestTimeOut">30000</string>
+
+    <!--Percentage to determine if user needs a psychologist-->
+    <string name="needAPsychoPercentage">60</string>
 
     <!--Generic response-->
     <string name="connection_failed">Connection Failed!</string>

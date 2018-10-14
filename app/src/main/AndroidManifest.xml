@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="true" />
@@ -35,17 +36,22 @@
         <activity
             android:name=".MainActivity"
             android:label="Chat"
-            android:parentActivityName=".ChatBotActivity"/>
+            android:parentActivityName=".ChatBotActivity" />
         <activity
             android:name=".SignUpActivity"
-            android:label="Sign Up"
             android:exported="true"
-            android:parentActivityName=".LoginActivity"></activity>
-        <activity android:name=".AccountActivity"></activity>
+            android:label="Sign Up"
+            android:parentActivityName=".LoginActivity" />
+        <activity android:name=".AccountActivity" />
         <activity
             android:name=".ChatBotActivity"
             android:label="@string/title_activity_chat_bot"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ChatHistoryActivity"
+            android:exported="true"
+            android:label="Chat History"
+            android:parentActivityName=".ChatBotActivity">
+        </activity>
     </application>
 
 </manifest>
