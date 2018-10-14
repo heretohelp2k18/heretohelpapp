@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private CommentList commentAdapter;
     private String UserID = "";
     private String UserType = "";
+    LinearLayout commentBox;
     Context appContext;
 
     private SharedPreferences prefs;
@@ -58,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         appContext = this;
 
+        commentBox = (LinearLayout) findViewById(R.id.llcomponents);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -67,6 +71,12 @@ public class MainActivity extends AppCompatActivity {
         if((intent.getStringExtra("chatroomid") != null) && (UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist")))
         {
             UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
+        }
+
+        if((intent.getStringExtra("viewonly") != null) && (intent.getStringExtra("viewonly").equals("yes")))
+        {
+            UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
+            commentBox.setVisibility(View.GONE);
         }
 
         UserID = UserSessionUtil.getSession(appContext, "userid");

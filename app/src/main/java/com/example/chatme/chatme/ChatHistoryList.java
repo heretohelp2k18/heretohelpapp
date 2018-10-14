@@ -1,6 +1,7 @@
 package com.example.chatme.chatme;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -33,9 +34,10 @@ public class ChatHistoryList extends ArrayAdapter<ChatHistory>{
         TextView textViewDate= (TextView) listViewItem.findViewById(R.id.txtDate);
         ImageView imgPhoto = (ImageView) listViewItem.findViewById(R.id.imgprofile);
 
-        ChatHistory chatHistoryItem = items.get(position);
+        final ChatHistory chatHistoryItem = items.get(position);
         textViewName.setText(chatHistoryItem.getChatmate());
         textViewDate.setText(chatHistoryItem.getChatdate());
+        final String chatroom = chatHistoryItem.getChatroom();
 
         Bitmap bitmap;
         if (chatHistoryItem.getGender().equals("Male")) {
@@ -47,6 +49,16 @@ public class ChatHistoryList extends ArrayAdapter<ChatHistory>{
         RoundedBitmapDrawable roundDrawable = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
         roundDrawable.setCircular(true);
         imgPhoto.setImageDrawable(roundDrawable);
+
+        listViewItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent enterChatRoom = new Intent(context, MainActivity.class);
+                enterChatRoom.putExtra("viewonly", "yes");
+                enterChatRoom.putExtra("chatroomid", chatroom);
+                context.startActivity(enterChatRoom);
+            }
+        });
 
         return listViewItem;
     }
