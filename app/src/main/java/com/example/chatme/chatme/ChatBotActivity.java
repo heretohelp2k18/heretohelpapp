@@ -65,7 +65,6 @@ public class ChatBotActivity extends AppCompatActivity
     DatabaseReference fireRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
-    Boolean initialBotLoaded = false;
 
     ScrollView cbsView;
     Double questionCounter = 0.0;
@@ -362,6 +361,7 @@ public class ChatBotActivity extends AppCompatActivity
                                 chatRoomId);
                         fireRef.child(psyID).child("available").setValue(false);
                         fireChatNotif.child(psyID).setValue(userData);
+                        break;
                     }
                 }
             }
@@ -372,6 +372,32 @@ public class ChatBotActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    public void PassNotificationToOtherPsych(final UserDataNotif userData)
+    {
+        // Broadcasting notification
+        final DatabaseReference fireChatNotif = fireDB.getReference("chatnotif");
+        fireRef = fireDB.getReference("online");
+        fireRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Online ol = snapshot.getValue(Online.class);
+                    if(ol.getAvailable() && (!snapshot.getKey().equals(UserSessionUtil.getSession(appContext, "userid")))) {
+                        String psyID = snapshot.getKey();
+                        fireRef.child(psyID).child("available").setValue(false);
+                        fireChatNotif.child(psyID).setValue(userData);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void RetryPrompt()
@@ -450,9 +476,9 @@ public class ChatBotActivity extends AppCompatActivity
                     acceptBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intentNotif = new Intent(appContext, MainActivity.class);
-                            intentNotif.putExtra("chatroomid", userdn.getChatroom());
-                            startActivity(intentNotif);
+                            fireChatNotif.removeValue();
+                            InsertChatRoomTask insertChatRoomTask = new InsertChatRoomTask(userdn.getChatroom(), userdn.getId());
+                            insertChatRoomTask.execute((Void) null);
                         }
                     });
                     chatbotContainer.addView(acceptBtn);
@@ -477,6 +503,7 @@ public class ChatBotActivity extends AppCompatActivity
                             showWaitingLoader();
                             DatabaseReference fireOnline = fireDB.getReference("online").child(UserSessionUtil.getSession(appContext,"userid"));
                             fireOnline.child("available").setValue(true);
+                            PassNotificationToOtherPsych(userdn);
                         }
                     });
                     chatbotContainer.addView(denyBtn);
@@ -517,13 +544,14 @@ public class ChatBotActivity extends AppCompatActivity
                 userRef.onDisconnect().removeValue();
                 showWaitingLoader();
             }
-            else if(UserSessionUtil.getSession(appContext, "usertype").equals("User")) {
+            else if((UserSessionUtil.getSession(appContext, "usertype").equals("User")) && (!UserSessionUtil.getSession(appContext, "initialBotLoaded").equals("yes"))) {
                 FetchDataTask fetchTask = new FetchDataTask();
                 fetchTask.execute((Void) null);
             }
-
-            if(initialBotLoaded)
+            else if(UserSessionUtil.getSession(appContext, "initialBotLoaded").equals("yes"))
             {
+                chatbotContainer.removeAllViews();
+                answerContainer.removeAllViews();
                 BotRouter("G1");
             }
         }
@@ -671,8 +699,106 @@ public class ChatBotActivity extends AppCompatActivity
             CommonUtil.showProgress(appContext, false);
 
             if (success) {
+
                 BotRouter("G1");
-                initialBotLoaded = true;
+                UserSessionUtil.setSession(appContext, "initialBotLoaded", "yes");
+            }
+            else {
+                if(errorcode.equals("143"))
+                {
+                    CommonUtil.showAlertWithCallback(appContext, responseMessage, new Callable<Void>() {
+                        public Void call() {
+                            UserSessionUtil.clearSession(appContext);
+                            Intent i = new Intent(appContext, LoginActivity.class);
+                            startActivity(i);
+                            return null;
+                        }
+                    }) ;
+                }
+                else
+                {
+                    CommonUtil.showAlert(appContext, responseMessage);
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            CommonUtil.showProgress(appContext, false);
+        }
+    }
+
+    public class InsertChatRoomTask extends AsyncTask<Void, Void, Boolean> {
+
+        String responseMessage = getResources().getString(R.string.connection_failed);
+        String errorcode = "";
+        String chatroom = "";
+        String userid = "";
+
+        InsertChatRoomTask(String chatRoom, String userId) {
+            chatroom = chatRoom;
+            userid = userId;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            CommonUtil.showProgress(appContext, true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            Boolean success = false;
+            BufferedReader reader;
+            try
+            {
+                List<NameValuePair> http_params = new LinkedList<NameValuePair>();
+                http_params.add(new BasicNameValuePair("username", UserSessionUtil.getSession(appContext, "username")));
+                http_params.add(new BasicNameValuePair("token", UserSessionUtil.getSession(appContext, "token")));
+                http_params.add(new BasicNameValuePair("psychoid", UserSessionUtil.getSession(appContext, "userid")));
+                http_params.add(new BasicNameValuePair("userid", userid));
+                http_params.add(new BasicNameValuePair("chatroom", chatroom));
+
+                String paramString = URLEncodedUtils.format(http_params, "utf-8");
+                Log.e("paramString",paramString);
+                String server_url = getResources().getString(R.string.serverUrl) + "/AddChatroom?"+paramString;
+
+                URL server = new URL(server_url);
+                // Create connection
+                HttpURLConnection myConnection = (HttpURLConnection) server.openConnection();
+                myConnection.connect();
+                InputStream stream = myConnection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+                while((line = reader.readLine()) != null){
+                    buffer.append(line);
+                }
+                String finalJSON = buffer.toString();
+                JSONObject parentObject = new JSONObject(finalJSON);
+
+                success = parentObject.getBoolean("success");
+                responseMessage = parentObject.getString("message");
+                errorcode = parentObject.getString("errorcode");
+
+                myConnection.disconnect();
+            }
+            catch(Exception e)
+            {
+                Log.e("Error",e.toString());
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            CommonUtil.showProgress(appContext, false);
+
+            if (success) {
+                Intent intentNotif = new Intent(appContext, MainActivity.class);
+                intentNotif.putExtra("chatroomid", chatroom);
+                startActivity(intentNotif);
             }
             else {
                 if(errorcode.equals("143"))
