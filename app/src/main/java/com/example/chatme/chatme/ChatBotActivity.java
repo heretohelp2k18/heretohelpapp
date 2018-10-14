@@ -6,6 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -71,6 +74,10 @@ public class ChatBotActivity extends AppCompatActivity
     Double answerCounter = 0.0;
     Boolean isQuestion = false;
     ValueEventListener chatRoomListener;
+
+    Uri notification;
+    Ringtone notifSound;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -427,6 +434,11 @@ public class ChatBotActivity extends AppCompatActivity
                 final UserDataNotif userdn = dataSnapshot.getValue(UserDataNotif.class);
                 if(userdn != null) {
                     chatbotContainer.removeAllViews();
+                    // Notification sound
+                    notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    notifSound = RingtoneManager.getRingtone(appContext, notification);
+                    notifSound.play();
+
                     // Image Avatar
                     ImageView imgAvatar = new ImageView(appContext);
                     Bitmap bitmap;
