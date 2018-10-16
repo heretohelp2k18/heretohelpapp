@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private CommentList commentAdapter;
     private String UserID = "";
     private String UserType = "";
+    private String UserFullName = "";
     LinearLayout commentBox;
     Context appContext;
 
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         UserID = UserSessionUtil.getSession(appContext, "userid");
         UserType = UserSessionUtil.getSession(appContext, "usertype");
+        UserFullName = UserSessionUtil.getSession(appContext, "userfirstname") + " " + UserSessionUtil.getSession(appContext, "userlastname");
 
         if(UserType.equals("Psychologist")) {
             final DatabaseReference fireChatRoom = myRef = database.getReference("chatroom").child(UserSessionUtil.getSession(appContext, "chatroom"));
@@ -88,9 +90,29 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
-                    if ((chatRoom.getPsychoid().equals("0")) || (UserID.equals(chatRoom.getPsychoid()))) {
+                    if(chatRoom.getExpired()) {
+                        CommonUtil.showAlertWithCallback(appContext, "Chat request expired.", new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                UserSessionUtil.setSession(appContext, "chatroom", "");
+                                Intent intent = new Intent(appContext, ChatBotActivity.class);
+                                startActivity(intent);
+                                return null;
+                            }
+                        });
+                    } else if ((chatRoom.getPsychoid().equals("0")) || (UserID.equals(chatRoom.getPsychoid()))) {
                         if (chatRoom.getPsychoid().equals("0")) {
                             fireChatRoom.child("psychoid").setValue(UserID);
+                            fireChatRoom.child("psychoname").setValue(UserFullName);
+                            DatabaseReference fireChatRoomMessages = database.getReference("chatroom").child(UserSessionUtil.getSession(appContext, "chatroom")).child("messages");
+                            String id = fireChatRoomMessages.push().getKey();
+                            String autoresponse = UserSessionUtil.getSession(appContext, "userautoresponse");
+                            if(autoresponse.trim().equals(""))
+                            {
+                                autoresponse = getResources().getString(R.string.default_auto_response);
+                            }
+                            Messages msg = new Messages(UserID, autoresponse, UserType);
+                            fireChatRoomMessages.child(id).setValue(msg);
                         }
                     } else {
                         CommonUtil.showAlertWithCallback(appContext, "This request has been taken by other psychologist.", new Callable<Void>() {

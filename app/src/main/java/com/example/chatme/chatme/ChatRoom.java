@@ -1,9 +1,6 @@
 package com.example.chatme.chatme;
 
 public class ChatRoom {
-
-    private String userid;
-
     public String getUserid() {
         return userid;
     }
@@ -36,9 +33,19 @@ public class ChatRoom {
         this.psychoname = psychoname;
     }
 
+    public Boolean getExpired() {
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
+    }
+
+    private String userid;
     private String username;
     private String psychoid;
     private String psychoname;
+    private Boolean expired;
     public ChatRoom(){
 
     }
@@ -49,5 +56,6 @@ public class ChatRoom {
         this.psychoid = psychoid;
         this.username = username;
         this.psychoname = psychoname;
+        this.expired = false;
     }
 }

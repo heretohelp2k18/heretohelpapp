@@ -10,6 +10,9 @@
     <!--Percentage to determine if user needs a psychologist-->
     <string name="needAPsychoPercentage">60</string>
 
+    <!--Percentage to determine if user needs a psychologist-->
+    <string name="default_auto_response">Hi, what can I help you with today?</string>
+
     <!--Generic response-->
     <string name="connection_failed">Connection Failed!</string>
     <!--End of Generic response-->

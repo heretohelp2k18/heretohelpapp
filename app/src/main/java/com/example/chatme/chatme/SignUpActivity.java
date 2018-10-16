@@ -65,7 +65,8 @@ import org.apache.http.message.BasicNameValuePair;
 public class SignUpActivity extends AppCompatActivity {
     private String signupUserType = "User";
     private String psychIDFileName = "";
-    private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password;
+    private EditText s_first_name, s_middle_name, s_last_name, s_age, s_email_address, s_password, s_confirm_password, s_autoresponse;
+    private android.support.design.widget.TextInputLayout s_autoresponse_container;
     private Spinner s_gender;
     private Button s_signup;
     private LinearLayout photoContainer;
@@ -104,6 +105,8 @@ public class SignUpActivity extends AppCompatActivity {
         s_middle_name = (EditText) findViewById(R.id.s_middle_name);
         s_last_name = (EditText) findViewById(R.id.s_last_name);
         s_age = (EditText) findViewById(R.id.s_age);
+        s_autoresponse = (EditText) findViewById(R.id.s_autoresponse);
+        s_autoresponse_container = (android.support.design.widget.TextInputLayout) findViewById(R.id.s_autoresponse_container);
 
         Intent intentExtra = getIntent();
         String intentAction = intentExtra.getStringExtra("action");
@@ -156,6 +159,11 @@ public class SignUpActivity extends AppCompatActivity {
                 String s_middle_name_val = s_middle_name.getText().toString();
                 String s_last_name_val = s_last_name.getText().toString();
                 String s_age_val = s_age.getText().toString();
+                String s_autoresponse_val = "";
+                if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist"))
+                {
+                    s_autoresponse_val = s_autoresponse.getText().toString();
+                }
 
                 Boolean error = false;
                 View focusView = null;
@@ -235,6 +243,7 @@ public class SignUpActivity extends AppCompatActivity {
                     signupUser.setUsername(s_email_address_val);
                     signupUser.setPassword(s_password_val);
                     signupUser.setUsertype(signupUserType);
+                    signupUser.setAutoresponse(s_autoresponse_val);
 
                     String service = "register";
                     if(updateAccount) {
@@ -260,6 +269,20 @@ public class SignUpActivity extends AppCompatActivity {
         s_middle_name.setText(UserSessionUtil.getSession(appContext,"usermiddlename"));
         s_last_name.setText(UserSessionUtil.getSession(appContext,"userlastname"));
         s_age.setText(UserSessionUtil.getSession(appContext,"userage"));
+
+        if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist"))
+        {
+            s_autoresponse_container.setVisibility(View.VISIBLE);
+            if(!UserSessionUtil.getSession(appContext, "userautoresponse").trim().equals(""))
+            {
+                s_autoresponse.setText(UserSessionUtil.getSession(appContext, "userautoresponse"));
+            }
+            else
+            {
+                s_autoresponse.setText(getResources().getString(R.string.default_auto_response));
+            }
+        }
+
     }
 
     @Override
@@ -380,6 +403,7 @@ public class SignUpActivity extends AppCompatActivity {
                 http_params.add(new BasicNameValuePair("username", signupUser.getUsername()));
                 http_params.add(new BasicNameValuePair("password", signupUser.getPassword()));
                 http_params.add(new BasicNameValuePair("usertype", signupUser.getUsertype()));
+                http_params.add(new BasicNameValuePair("autoresponse", signupUser.getAutoresponse()));
                 http_params.add(new BasicNameValuePair("idimage", psychIDFileName));
                 if(updateAccount)
                 {
@@ -452,6 +476,7 @@ public class SignUpActivity extends AppCompatActivity {
                     UserSessionUtil.setSession(appContext,"usermiddlename", s_middle_name.getText().toString());
                     UserSessionUtil.setSession(appContext,"userlastname", s_last_name.getText().toString());
                     UserSessionUtil.setSession(appContext,"userage", s_age.getText().toString());
+                    UserSessionUtil.setSession(appContext,"userautoresponse", s_autoresponse.getText().toString());
 
                     s_password.setText("");
                     s_confirm_password.setText("");

@@ -10,6 +10,7 @@ public class User {
     public int age;
     public String gender;
     public String email;
+    public String autoresponse;
 
     public User(){
 
@@ -95,5 +96,13 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAutoresponse() {
+        return autoresponse;
+    }
+
+    public void setAutoresponse(String autoresponse) {
+        this.autoresponse = autoresponse;
     }
 }
