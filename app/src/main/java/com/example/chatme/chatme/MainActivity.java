@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         if((intent.getStringExtra("viewonly") != null) && (intent.getStringExtra("viewonly").equals("yes")))
         {
             UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
-            commentBox.setVisibility(View.GONE);
+//            commentBox.setVisibility(View.GONE);
         }
 
         UserID = UserSessionUtil.getSession(appContext, "userid");

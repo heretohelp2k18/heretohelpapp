@@ -314,7 +314,6 @@ public class ChatBotActivity extends AppCompatActivity
                 if(!chatRoom.getPsychoid().equals("0"))
                 {
                     fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
-                    CommonUtil.dismissProgressDialog();
                     UserSessionUtil.setSession(appContext,"requesting", "no");
                     Intent i = new Intent(appContext, MainActivity.class);
                     startActivity(i);
@@ -613,9 +612,15 @@ public class ChatBotActivity extends AppCompatActivity
             CommonUtil.showAlertMessageWithAction(appContext, "Are you sure you want to log out?", new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    fireRef = fireDB.getReference("online");
-                    DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
-                    userRef.removeValue();
+                    if(UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist")) {
+                        try {
+                            fireRef = fireDB.getReference("online");
+                            DatabaseReference userRef = fireRef.child(UserSessionUtil.getSession(appContext, "userid"));
+                            userRef.removeValue();
+                        } catch (Exception e){
+                            Log.e("LogoutException", e.toString());
+                        }
+                    }
                     UserSessionUtil.clearSession(ChatBotActivity.this);
                     Intent i = new Intent(ChatBotActivity.this, LoginActivity.class);
                     startActivity(i);
