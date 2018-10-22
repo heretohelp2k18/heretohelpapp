@@ -649,12 +649,22 @@ public class ChatBotActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_history) {
-            Intent i = new Intent(appContext,ChatHistoryActivity.class);
-            startActivity(i);
+            if(UserSessionUtil.getSession(appContext, "isguest").equals("1")){
+                CommonUtil.showAlert(appContext, "You are only a guest, please sign up to use this menu.");
+            }
+            else {
+                Intent i = new Intent(appContext, ChatHistoryActivity.class);
+                startActivity(i);
+            }
         } else if (id == R.id.nav_account) {
-            Intent i = new Intent(appContext,SignUpActivity.class);
-            i.putExtra("action","sign-update");
-            startActivity(i);
+            if(UserSessionUtil.getSession(appContext, "isguest").equals("1")){
+                CommonUtil.showAlert(appContext, "You are only a guest, please sign up to use this menu.");
+            }
+            else {
+                Intent i = new Intent(appContext,SignUpActivity.class);
+                i.putExtra("action","sign-update");
+                startActivity(i);
+            }
         } else if (id == R.id.nav_logout) {
             CommonUtil.showAlertMessageWithAction(appContext, "Are you sure you want to log out?", new Callable<Void>() {
                 @Override
