@@ -36,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -525,17 +528,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             @Override
                             public void run() {
                                 try {
-                                    Context curContext = LoginActivity.this;
-                                    CommonUtil.showAlertWithCallback(curContext, LoginActivity.this.getResources().getString(R.string.guestTimeOutMessage).toString(), new Callable<Void>() {
-                                        @Override
-                                        public Void call() throws Exception {
-                                            Context curContext = LoginActivity.this;
-                                            UserSessionUtil.clearSession(curContext);
-                                            Intent i = new Intent(curContext, LoginActivity.class);
-                                            curContext.startActivity(i);
-                                            return null;
+                                    if(UserSessionUtil.isValidSession(appContext)) {
+                                        if(UserSessionUtil.getSession(appContext, "isguest").equals("1"))
+                                        {
+                                            FirebaseDatabase fireDB = FirebaseDatabase.getInstance();
+                                            DatabaseReference fireRef = fireDB.getReference("guest");
+                                            fireRef.child(UserSessionUtil.getSession(appContext, "userid")).setValue("0");
                                         }
-                                    });
+                                    }
                                 } catch (Exception e) {
                                     Log.e("Error:::" , e.toString());
                                 }

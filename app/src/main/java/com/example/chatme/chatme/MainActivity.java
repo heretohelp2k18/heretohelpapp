@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference myRef;
+    private DatabaseReference fireGuest;
+    private ValueEventListener guestSessionListener;
     private DatabaseReference myPhoto;
     private List<Messages> messages = new ArrayList<>();
     private ListView lvMessages;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         appContext = this;
+        UserSessionUtil.setSession(appContext, "ACTIVITY", "4");
 
         commentBox = (LinearLayout) findViewById(R.id.llcomponents);
 
@@ -67,6 +70,39 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         database = FirebaseDatabase.getInstance();
+
+        if(UserSessionUtil.getSession(appContext, "isguest").equals("1"))
+        {
+            fireGuest = database.getReference("guest");
+            final String userId = UserSessionUtil.getSession(appContext, "userid");
+            fireGuest.child(userId).setValue("1");
+
+            guestSessionListener = fireGuest.child(userId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String key = dataSnapshot.getKey();
+                    String status = dataSnapshot.getValue().toString();
+                    if(status.equals("0") && (key.equals(userId)))
+                    {
+                        UserSessionUtil.clearSession(appContext);
+                        CommonUtil.showAlertWithCallback(appContext, appContext.getResources().getString(R.string.guestTimeOutMessage), new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                Intent i = new Intent(appContext, LoginActivity.class);
+                                startActivity(i);
+                                return null;
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
         // Getting intent extras
         Intent intent = getIntent();
         if((intent.getStringExtra("chatroomid") != null) && (UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist")))
@@ -280,6 +316,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        FirebaseAuth.getInstance().signOut();
+        //FirebaseAuth.getInstance().signOut();
+        if(UserSessionUtil.getSession(appContext, "isguest").equals("1")) {
+            fireGuest = database.getReference("guest");
+            final String userId = UserSessionUtil.getSession(appContext, "userid");
+            fireGuest.child(userId).removeEventListener(guestSessionListener);
+        }
     }
 }

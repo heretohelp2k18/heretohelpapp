@@ -1,11 +1,11 @@
 <resources>
     <!--Server configuration-->
-    <string name="serverUrl">http://192.168.1.9/heretohelp/webservice</string>
-    <!--<string name="serverUrl">http://heretohelp2k18.000webhostapp.com/webservice</string>-->
+    <!--<string name="serverUrl">http://192.168.1.9/heretohelp/webservice</string>-->
+    <string name="serverUrl">http://heretohelp2k18.000webhostapp.com/webservice</string>
     <!--End of Server Configuration-->
 
-    <!--Time out of guest session-->
-    <string name="guestTimeOut">10000</string>
+    <!--Time out of guest session (3 hours)-->
+    <string name="guestTimeOut">10800000</string>
 
     <!--Time out message of guest session-->
     <string name="guestTimeOutMessage">Guest session expired!</string>

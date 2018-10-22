@@ -65,6 +65,7 @@ public class ChatBotActivity extends AppCompatActivity
 
     Context appContext;
     FirebaseDatabase fireDB;
+    DatabaseReference fireGuest;
     DatabaseReference fireRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
@@ -74,12 +75,18 @@ public class ChatBotActivity extends AppCompatActivity
     Double answerCounter = 0.0;
     Boolean isQuestion = false;
     ValueEventListener chatRoomListener;
+    ValueEventListener guestSessionListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_bot);
         appContext = this;
+
+        fireDB = FirebaseDatabase.getInstance();
+
+        UserSessionUtil.setSession(appContext, "ACTIVITY", "3");
+
         cbsView = (ScrollView) (findViewById(R.id.cbsview));
         chatbotContainer = (LinearLayout) findViewById(R.id.cbcomments);
         answerContainer = (LinearLayout) findViewById(R.id.answerContainer);
@@ -286,8 +293,6 @@ public class ChatBotActivity extends AppCompatActivity
         findingText.setText("We're finding you a psychologist...");
         findingText.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         chatbotContainer.addView(findingText);
-
-        fireDB = FirebaseDatabase.getInstance();
 
         UserSessionUtil.setSession(appContext,"requesting", "yes");
 
@@ -560,6 +565,48 @@ public class ChatBotActivity extends AppCompatActivity
                 answerContainer.removeAllViews();
                 BotRouter("G1");
             }
+        }
+
+        if(UserSessionUtil.getSession(appContext, "isguest").equals("1"))
+        {
+            fireGuest = fireDB.getReference("guest");
+            final String userId = UserSessionUtil.getSession(appContext, "userid");
+            fireGuest.child(userId).setValue("1");
+
+            guestSessionListener = fireGuest.child(userId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String key = dataSnapshot.getKey();
+                    String status = dataSnapshot.getValue().toString();
+                    if(status.equals("0") && (key.equals(userId)))
+                    {
+                        UserSessionUtil.clearSession(appContext);
+                        CommonUtil.showAlertWithCallback(appContext, appContext.getResources().getString(R.string.guestTimeOutMessage), new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                Intent i = new Intent(appContext, LoginActivity.class);
+                                startActivity(i);
+                                return null;
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(UserSessionUtil.getSession(appContext, "isguest").equals("1")) {
+            fireGuest = fireDB.getReference("guest");
+            final String userId = UserSessionUtil.getSession(appContext, "userid");
+            fireGuest.child(userId).removeEventListener(guestSessionListener);
         }
     }
 

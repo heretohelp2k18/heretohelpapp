@@ -33,6 +33,7 @@ public class CommonUtil {
     {
         new AlertDialog.Builder(appContext)
                 .setMessage(message)
+                .setCancelable(false)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -45,6 +46,7 @@ public class CommonUtil {
     {
         new AlertDialog.Builder(appContext)
                 .setMessage(message)
+                .setCancelable(false)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     try {
@@ -61,6 +63,7 @@ public class CommonUtil {
     public static void showAlertMessageWithAction(Context appContext, String message, final Callable<Void> positiveMethod, final Callable<Void> negativeMethod) {
         new AlertDialog.Builder(appContext)
                 .setMessage(message)
+                .setCancelable(false)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         try {
