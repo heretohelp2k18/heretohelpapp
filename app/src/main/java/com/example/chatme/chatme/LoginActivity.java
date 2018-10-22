@@ -3,11 +3,14 @@ package com.example.chatme.chatme;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.usb.UsbRequest;
+import android.inputmethodservice.KeyboardView;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -53,6 +56,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -85,6 +90,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
     private Context appContext;
+    private Button sign_in_as_guest;
     private Button signup;
     private Button psychoSignUpButton;
     // Firebase
@@ -124,7 +130,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        signup = (Button) findViewById(R.id.email_sign_up_button);
+        sign_in_as_guest = (Button) findViewById(R.id.sign_in_as_guest);
+        sign_in_as_guest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GuestLoginTask guestTask = new GuestLoginTask();
+                guestTask.execute((Void) null);
+            }
+        });
+                signup = (Button) findViewById(R.id.email_sign_up_button);
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -436,6 +450,119 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected void onCancelled() {
             mAuthTask = null;
+            CommonUtil.showProgress(appContext, false);
+        }
+    }
+
+    public class GuestLoginTask extends AsyncTask<Void, Void, Boolean> {
+
+        String responseMessage = getResources().getString(R.string.connection_failed);
+
+        GuestLoginTask() {
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            CommonUtil.showProgress(appContext, true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            Boolean success = false;
+            try
+            {
+                String server_url = getResources().getString(R.string.serverUrl) + "/GuestLogin?";
+
+                URL server = new URL(server_url);
+                // Create connection
+                HttpURLConnection myConnection = (HttpURLConnection) server.openConnection();
+                myConnection.setRequestMethod("POST");
+                if (myConnection.getResponseCode() == 200) {
+                    InputStream responseBody = myConnection.getInputStream();
+                    InputStreamReader responseBodyReader =
+                            new InputStreamReader(responseBody, "UTF-8");
+                    JsonReader jsonReader = new JsonReader(responseBodyReader);
+                    jsonReader.beginObject(); // Start processing the JSON object
+                    while (jsonReader.hasNext()) { // Loop through all keys
+                        String key = jsonReader.nextName(); // Fetch the next key
+                        if (key.equals("success")) {
+                            success = jsonReader.nextBoolean();
+                        }
+                        else if(key.equals("message"))
+                        {
+                            responseMessage = jsonReader.nextString();
+                        }
+                        else
+                        {
+                            UserSessionUtil.setSession(appContext, key, jsonReader.nextString());
+                        }
+                    }
+                    jsonReader.close();
+                    myConnection.disconnect();
+                } else {
+                    // Error handling code goes here
+                }
+            }
+            catch(Exception e)
+            {
+                Log.e("Error",e.toString());
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            CommonUtil.showProgress(appContext, false);
+
+            if (success) {
+                // Auto Logout
+                TimerTask myTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Context curContext = LoginActivity.this;
+                                    CommonUtil.showAlertWithCallback(curContext, LoginActivity.this.getResources().getString(R.string.guestTimeOutMessage).toString(), new Callable<Void>() {
+                                        @Override
+                                        public Void call() throws Exception {
+                                            Context curContext = LoginActivity.this;
+                                            UserSessionUtil.clearSession(curContext);
+                                            Intent i = new Intent(curContext, LoginActivity.class);
+                                            curContext.startActivity(i);
+                                            return null;
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    Log.e("Error:::" , e.toString());
+                                }
+                            }
+                        });
+
+                    }
+                };
+                Timer timer = new Timer();
+                timer.schedule(myTimerTask, Integer.parseInt(getResources().getString(R.string.guestTimeOut)));
+
+                CommonUtil.showAlertWithCallback(appContext, UserSessionUtil.getSession(appContext, "message_to_guest"), new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        Intent i = new Intent(LoginActivity.this, ChatBotActivity.class);
+                        startActivity(i);
+                        return null;
+                    }
+                });
+            }
+            else {
+                CommonUtil.showAlert(appContext, responseMessage);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
             CommonUtil.showProgress(appContext, false);
         }
     }

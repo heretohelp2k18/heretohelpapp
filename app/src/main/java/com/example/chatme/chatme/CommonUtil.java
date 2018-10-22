@@ -1,8 +1,11 @@
 package com.example.chatme.chatme;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
@@ -15,8 +18,12 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.text.Html;
 import android.os.Vibrator;
+import android.util.Log;
 
+import java.util.List;
 import java.util.concurrent.Callable;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 public class CommonUtil {
     public static User currentUser = new User();
