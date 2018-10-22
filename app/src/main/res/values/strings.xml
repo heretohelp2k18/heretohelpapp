@@ -6,6 +6,8 @@
 
     <!--Time out of guest session (3 hours)-->
     <string name="guestTimeOut">10800000</string>
+    <!--Test Timeout-->
+    <!--<string name="guestTimeOut">20000</string>-->
 
     <!--Time out message of guest session-->
     <string name="guestTimeOutMessage">Guest session expired!</string>

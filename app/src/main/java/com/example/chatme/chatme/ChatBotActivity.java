@@ -601,8 +601,8 @@ public class ChatBotActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         if(UserSessionUtil.getSession(appContext, "isguest").equals("1")) {
             fireGuest = fireDB.getReference("guest");
             final String userId = UserSessionUtil.getSession(appContext, "userid");

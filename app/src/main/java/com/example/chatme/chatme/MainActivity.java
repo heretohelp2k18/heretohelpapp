@@ -300,6 +300,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
+        if(UserSessionUtil.getSession(appContext, "isguest").equals("1")) {
+            fireGuest = database.getReference("guest");
+            final String userId = UserSessionUtil.getSession(appContext, "userid");
+            fireGuest.child(userId).removeEventListener(guestSessionListener);
+        }
     }
 
     @Override
@@ -317,10 +322,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         //FirebaseAuth.getInstance().signOut();
-        if(UserSessionUtil.getSession(appContext, "isguest").equals("1")) {
-            fireGuest = database.getReference("guest");
-            final String userId = UserSessionUtil.getSession(appContext, "userid");
-            fireGuest.child(userId).removeEventListener(guestSessionListener);
-        }
+
     }
 }
