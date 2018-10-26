@@ -189,8 +189,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         if(UserSessionUtil.isValidSession(appContext))
         {
-            Intent i = new Intent(appContext, ChatBotActivity.class);
-            startActivity(i);
+            if(UserSessionUtil.getSession(appContext, "isguest").equals("1")){
+                UserSessionUtil.clearSession(appContext);
+            }
+            else {
+                Intent i = new Intent(appContext, ChatBotActivity.class);
+                startActivity(i);
+            }
         }
 
         getLoaderManager().initLoader(0, null, this);
@@ -534,6 +539,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                             FirebaseDatabase fireDB = FirebaseDatabase.getInstance();
                                             DatabaseReference fireRef = fireDB.getReference("guest");
                                             fireRef.child(UserSessionUtil.getSession(appContext, "userid")).setValue("0");
+                                            UserSessionUtil.clearSession(appContext);
                                         }
                                     }
                                 } catch (Exception e) {
