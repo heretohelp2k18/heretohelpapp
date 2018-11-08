@@ -215,9 +215,15 @@ public class SignUpActivity extends AppCompatActivity {
                     focusView = s_confirm_password;
                     error = true;
                 }
-                else if((!s_password_val.equals(s_confirm_password_val) || (s_password_val.length()<6)) && validatePasswordFields)
+                else if(s_password_val.length()<6 && validatePasswordFields)
                 {
-                    s_confirm_password.setError("Passwords do not match, must be atleast 6 characters.");
+                    s_password.setError("Password must be atleast 6 characters.");
+                    focusView = s_password;
+                    error = true;
+                }
+                else if(!s_password_val.equals(s_confirm_password_val) && validatePasswordFields)
+                {
+                    s_confirm_password.setError("Passwords do not match.");
                     focusView = s_confirm_password;
                     error = true;
                 }
@@ -346,6 +352,10 @@ public class SignUpActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
+        }
+        else
+        {
+            imagePath = null;
         }
 
         super.onActivityResult(requestCode, resultCode, data);
