@@ -173,6 +173,8 @@ public class ChatBotActivity extends AppCompatActivity
         else if(tag.equals("CONNECT"))
         {
             UserSessionUtil.setSession(appContext,"userskipchatbot", "1");
+            SkipChatBotTask skipTask = new SkipChatBotTask();
+            skipTask.execute((Void) null);
             initializeChat(true);
         }
         else {
@@ -422,7 +424,13 @@ public class ChatBotActivity extends AppCompatActivity
         }, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                ChatBotActivity.this.BotRouter("G1");
+                if(UserSessionUtil.getSession(appContext, "userskipchatbot").equals("1")) {
+                    Intent i = new Intent(appContext, ChatHistoryActivity.class);
+                    startActivity(i);
+                }
+                else {
+                    ChatBotActivity.this.BotRouter("G1");
+                }
                 return null;
             }
         });
@@ -896,6 +904,74 @@ public class ChatBotActivity extends AppCompatActivity
                 {
                     CommonUtil.showAlert(appContext, responseMessage);
                 }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            CommonUtil.showProgress(appContext, false);
+        }
+    }
+
+
+    public class SkipChatBotTask extends AsyncTask<Void, Void, Boolean> {
+
+        String responseMessage = getResources().getString(R.string.connection_failed);
+        String errorcode = "";
+
+        SkipChatBotTask() {
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            Boolean success = false;
+            BufferedReader reader;
+            try
+            {
+                List<NameValuePair> http_params = new LinkedList<NameValuePair>();
+                http_params.add(new BasicNameValuePair("username", UserSessionUtil.getSession(appContext, "username")));
+                http_params.add(new BasicNameValuePair("token", UserSessionUtil.getSession(appContext, "token")));
+                http_params.add(new BasicNameValuePair("userid", UserSessionUtil.getSession(appContext, "userid")));
+
+                String paramString = URLEncodedUtils.format(http_params, "utf-8");
+                Log.e("paramString",paramString);
+                String server_url = getResources().getString(R.string.serverUrl) + "/SetSkipChatBot?"+paramString;
+
+                URL server = new URL(server_url);
+                // Create connection
+                HttpURLConnection myConnection = (HttpURLConnection) server.openConnection();
+                myConnection.connect();
+                InputStream stream = myConnection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+                while((line = reader.readLine()) != null){
+                    buffer.append(line);
+                }
+                String finalJSON = buffer.toString();
+                JSONObject parentObject = new JSONObject(finalJSON);
+
+                success = parentObject.getBoolean("success");
+
+                myConnection.disconnect();
+            }
+            catch(Exception e)
+            {
+                Log.e("Error",e.toString());
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            if (success) {
+
             }
         }
 
