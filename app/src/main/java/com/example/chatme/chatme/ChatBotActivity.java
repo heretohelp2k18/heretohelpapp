@@ -172,6 +172,7 @@ public class ChatBotActivity extends AppCompatActivity
         }
         else if(tag.equals("CONNECT"))
         {
+            UserSessionUtil.setSession(appContext,"userskipchatbot", "1");
             initializeChat(true);
         }
         else {
@@ -318,10 +319,12 @@ public class ChatBotActivity extends AppCompatActivity
                 ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
                 if(!chatRoom.getPsychoid().equals("0"))
                 {
-                    fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
-                    UserSessionUtil.setSession(appContext,"requesting", "no");
-                    Intent i = new Intent(appContext, MainActivity.class);
-                    startActivity(i);
+                    if(UserSessionUtil.getSession(appContext,"requesting").equals("yes")) {
+                        fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
+                        UserSessionUtil.setSession(appContext, "requesting", "no");
+                        Intent i = new Intent(appContext, MainActivity.class);
+                        startActivity(i);
+                    }
                 }
             }
 
@@ -554,6 +557,10 @@ public class ChatBotActivity extends AppCompatActivity
                 chatNotifListener();
                 userRef.onDisconnect().removeValue();
                 showWaitingLoader();
+            }
+            else if (UserSessionUtil.getSession(appContext,"userskipchatbot").equals("1"))
+            {
+                initializeChat(true);
             }
             else if((UserSessionUtil.getSession(appContext, "usertype").equals("User")) && (!UserSessionUtil.getSession(appContext, "initialBotLoaded").equals("yes"))) {
                 FetchDataTask fetchTask = new FetchDataTask();

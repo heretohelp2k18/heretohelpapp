@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference myRef;
     private DatabaseReference fireGuest;
     private ValueEventListener guestSessionListener;
+    private ValueEventListener chatListener;
     private DatabaseReference myPhoto;
     private List<Messages> messages = new ArrayList<>();
     private ListView lvMessages;
@@ -224,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
+                myRef.removeEventListener(chatListener);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -234,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //attaching value event listener
-        myRef.addValueEventListener(new ValueEventListener() {
+        chatListener = myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -295,6 +297,12 @@ public class MainActivity extends AppCompatActivity {
 //
 //            }
 //        });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        myRef.removeEventListener(chatListener);
     }
 
     @Override
