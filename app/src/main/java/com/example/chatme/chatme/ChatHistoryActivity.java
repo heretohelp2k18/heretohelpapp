@@ -103,8 +103,9 @@ public class ChatHistoryActivity extends AppCompatActivity {
                 JSONObject parentObject = new JSONObject(finalJSON);
 
                 chatHistoryItem.clear();
+                UserSessionUtil.setSession(appContext, "chatroom_json_data", finalJSON);
                 // ChatRoom Array
-                JSONArray crArray = parentObject.getJSONArray("chatroom_data");
+                JSONArray crArray = parentObject.getJSONArray("chatroom_data_distinct_for_client");
                 for(int i = 0; i < crArray .length(); i++){
                     JSONObject finalObject = crArray .getJSONObject(i);
                     ChatHistory newItem = new ChatHistory();

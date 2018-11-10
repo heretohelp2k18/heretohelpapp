@@ -38,6 +38,7 @@ public class ChatHistoryList extends ArrayAdapter<ChatHistory>{
         textViewName.setText(chatHistoryItem.getChatmate());
         textViewDate.setText(chatHistoryItem.getChatdate());
         final String chatroom = chatHistoryItem.getChatroom();
+        final String chatmate = chatHistoryItem.getChatmate();
 
         Bitmap bitmap;
         if (chatHistoryItem.getGender().equals("Male")) {
@@ -56,6 +57,7 @@ public class ChatHistoryList extends ArrayAdapter<ChatHistory>{
                 Intent enterChatRoom = new Intent(context, MainActivity.class);
                 enterChatRoom.putExtra("viewonly", "yes");
                 enterChatRoom.putExtra("chatroomid", chatroom);
+                enterChatRoom.putExtra("chatmate", chatmate);
                 context.startActivity(enterChatRoom);
             }
         });

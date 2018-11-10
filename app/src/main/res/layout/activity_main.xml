@@ -6,23 +6,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
     <LinearLayout
         android:id="@+id/llcomments"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="bottom"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="72dp">
-            <ListView
-                android:id="@+id/lvMessages"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp"
-                android:padding="10dp"/>
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+                <ListView
+                    android:id="@+id/lvHistoryList"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:padding="10dp"
+                    android:layout_weight="1"/>
+
+                <ListView
+                    android:id="@+id/lvMessages"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:padding="10dp"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
     <LinearLayout

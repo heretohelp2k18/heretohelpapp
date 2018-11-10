@@ -12,15 +12,19 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +34,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private String UserID = "";
     private String UserType = "";
     private String UserFullName = "";
+    LinearLayout llhistory;
     LinearLayout commentBox;
     Context appContext;
 
@@ -64,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         appContext = this;
         UserSessionUtil.setSession(appContext, "ACTIVITY", "4");
-
+        //llhistory = (LinearLayout) findViewById(R.id.llhistory);
         commentBox = (LinearLayout) findViewById(R.id.llcomponents);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -109,6 +117,11 @@ public class MainActivity extends AppCompatActivity {
         if((intent.getStringExtra("chatroomid") != null) && (UserSessionUtil.getSession(appContext, "usertype").equals("Psychologist")))
         {
             UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
+        }
+
+        if(intent.getStringExtra("chatmate") != null)
+        {
+            UserSessionUtil.setSession(appContext, "chatmate", intent.getStringExtra("chatmate"));
         }
 
         if((intent.getStringExtra("viewonly") != null) && (intent.getStringExtra("viewonly").equals("yes")))
@@ -170,6 +183,49 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        //Load Chat History
+        try {
+            ListView lv = (ListView) findViewById(R.id.lvHistoryList);
+            String chatmate = UserSessionUtil.getSession(appContext, "chatmate");
+            if(!chatmate.trim().equals("")) {
+                ArrayList arrayList = new ArrayList();
+                final ArrayList arrayListIndex = new ArrayList();
+
+                String chatroom_json_data = UserSessionUtil.getSession(appContext, "chatroom_json_data");
+                JSONObject parentObject = new JSONObject(chatroom_json_data);
+                JSONArray crArray = parentObject.getJSONArray("chatroom_data_raw");
+                for (int i = 0; i < crArray.length(); i++) {
+                    JSONObject finalObject = crArray.getJSONObject(i);
+                    if(chatmate.equals(finalObject.getString("chatmate"))) {
+                        arrayList.add(finalObject.getString("chatdate"));
+                        arrayListIndex.add(finalObject.getString("chatroom"));
+                    }
+                }
+
+                ArrayAdapter adapter = new ArrayAdapter<String>(appContext, android.R.layout.simple_list_item_1, arrayList);
+                lv.setAdapter(adapter);
+                lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        String chatroom = arrayListIndex.get(position).toString();
+                        UserSessionUtil.setSession(appContext, "chatroom", chatroom);
+                        loadMessages();
+                        bindingChatMessages();
+                    }
+                });
+
+                lv.setVisibility(View.VISIBLE);
+                UserSessionUtil.setSession(appContext, "chatmate", "");
+            }
+            else
+            {
+                lv.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
+            Log.e("JSON Error:", e.toString());
+        }
+        //End of Load chat History
 
         loadMessages();
     }
@@ -236,6 +292,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //attaching value event listener
+        bindingChatMessages();
+
+    }
+
+    public void bindingChatMessages()
+    {
+        if(chatListener != null)
+        {
+            myRef.removeEventListener(chatListener);
+            lvMessages.setAdapter(null);
+        }
         chatListener = myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -270,33 +337,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-//        myPhoto.orderByChild("id").equalTo(currentUser.getUid()).limitToFirst(1).addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//                UserPhoto user = dataSnapshot.getValue(UserPhoto.class);
-//            }
-//
-//            @Override
-//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
     }
 
     @Override
