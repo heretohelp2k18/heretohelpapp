@@ -168,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
                             fireChatRoomMessages.child(id).setValue(msg);
                         }
                     } else {
+                        lvMessages.setAdapter(null);
                         CommonUtil.showAlertWithCallback(appContext, "This request has been taken by other psychologist.", new Callable<Void>() {
                             @Override
                             public Void call() throws Exception {
