@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private String UserID = "";
     private String UserType = "";
     private String UserFullName = "";
+    Boolean historyMode = false;
     LinearLayout llhistory;
     LinearLayout commentBox;
     Context appContext;
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
 
         if((intent.getStringExtra("viewonly") != null) && (intent.getStringExtra("viewonly").equals("yes")))
         {
+            historyMode = true;
             UserSessionUtil.setSession(appContext, "chatroom", intent.getStringExtra("chatroomid"));
 //            commentBox.setVisibility(View.GONE);
         }
@@ -281,9 +283,12 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
-                String id = myRef.push().getKey();
-                Messages msg = new Messages(UserID, "<i>-- "+UserFullName+" left this conversation... --</i>", UserType);
-                myRef.child(id).setValue(msg);
+                if(!historyMode)
+                {
+                    String id = myRef.push().getKey();
+                    Messages msg = new Messages(UserID, "<i>-- " + UserFullName + " left this conversation... --</i>", UserType);
+                    myRef.child(id).setValue(msg);
+                }
                 myRef.removeEventListener(chatListener);
                 return true;
             default:
