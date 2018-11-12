@@ -67,6 +67,7 @@ public class ChatBotActivity extends AppCompatActivity
     FirebaseDatabase fireDB;
     DatabaseReference fireGuest;
     DatabaseReference fireRef;
+    DatabaseReference fireChatNotifRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
 
@@ -76,6 +77,7 @@ public class ChatBotActivity extends AppCompatActivity
     Boolean isQuestion = false;
     ValueEventListener chatRoomListener;
     ValueEventListener guestSessionListener;
+    ValueEventListener fireChatNotifRefListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -439,8 +441,8 @@ public class ChatBotActivity extends AppCompatActivity
     public void chatNotifListener()
     {
         final String userid = UserSessionUtil.getSession(appContext, "userid");
-        final DatabaseReference fireChatNotif = fireDB.getReference("chatnotif").child(userid);
-        fireChatNotif.addValueEventListener(new ValueEventListener() {
+        final DatabaseReference fireChatNotifRef = fireDB.getReference("chatnotif").child(userid);
+        fireChatNotifRefListener = fireChatNotifRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final UserDataNotif userdn = dataSnapshot.getValue(UserDataNotif.class);
@@ -498,7 +500,8 @@ public class ChatBotActivity extends AppCompatActivity
                     acceptBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            fireChatNotif.removeValue();
+                            fireChatNotifRef.removeValue();
+                            fireChatNotifRef.removeEventListener(fireChatNotifRefListener);
                             InsertChatRoomTask insertChatRoomTask = new InsertChatRoomTask(userdn.getChatroom(), userdn.getId());
                             insertChatRoomTask.execute((Void) null);
                         }
@@ -521,7 +524,7 @@ public class ChatBotActivity extends AppCompatActivity
                     denyBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            fireChatNotif.removeValue();
+                            fireChatNotifRef.removeValue();
                             showWaitingLoader();
                             DatabaseReference fireOnline = fireDB.getReference("online").child(UserSessionUtil.getSession(appContext,"userid"));
                             fireOnline.child("available").setValue(true);
