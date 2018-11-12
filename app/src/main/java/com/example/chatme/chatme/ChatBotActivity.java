@@ -68,6 +68,7 @@ public class ChatBotActivity extends AppCompatActivity
     DatabaseReference fireGuest;
     DatabaseReference fireRef;
     DatabaseReference fireChatNotifRef;
+    DatabaseReference chatRoomNotifRef;
     LinearLayout chatbotContainer;
     LinearLayout answerContainer;
 
@@ -317,7 +318,8 @@ public class ChatBotActivity extends AppCompatActivity
                                             UserSessionUtil.getSession(appContext, "userfirstname"),
                                             "0","");
         fireChatRoom.child(chatRoomId).setValue(chatRoom);
-        chatRoomListener = fireChatRoom.child(chatRoomId).addValueEventListener(new ValueEventListener() {
+        chatRoomNotifRef = fireChatRoom.child(chatRoomId);
+        chatRoomListener = chatRoomNotifRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ChatRoom chatRoom = dataSnapshot.getValue(ChatRoom.class);
@@ -326,6 +328,7 @@ public class ChatBotActivity extends AppCompatActivity
                     if(UserSessionUtil.getSession(appContext,"requesting").equals("yes")) {
                         fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
                         UserSessionUtil.setSession(appContext, "requesting", "no");
+                        chatRoomNotifRef.removeEventListener(chatRoomListener);
                         Intent i = new Intent(appContext, MainActivity.class);
                         startActivity(i);
                     }
@@ -347,7 +350,7 @@ public class ChatBotActivity extends AppCompatActivity
                     public void run() {
                         if(UserSessionUtil.getSession(ChatBotActivity.this, "requesting").equals("yes"))
                         {
-                            fireChatRoom.child(chatRoomId).removeEventListener(chatRoomListener);
+                            chatRoomNotifRef.removeEventListener(chatRoomListener);
                             ChatBotActivity.this.chatbotContainer.removeAllViews();
                             ChatBotActivity.this.RetryPrompt();
                         }
