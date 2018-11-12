@@ -420,25 +420,33 @@ public class ChatBotActivity extends AppCompatActivity
 
     public void RetryPrompt()
     {
-        CommonUtil.showAlertMessageWithAction(appContext, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                ChatBotActivity.this.initializeChat(false);
-                return null;
-            }
-        }, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                if(UserSessionUtil.getSession(appContext, "userskipchatbot").equals("1")) {
-                    Intent i = new Intent(appContext, ChatHistoryActivity.class);
-                    startActivity(i);
+        String retryActive = UserSessionUtil.getSession(appContext, "retryActive");
+
+        if((retryActive.trim() == "") || (retryActive.trim() == "no"))
+        {
+            UserSessionUtil.setSession(appContext, "retryActive", "yes");
+
+            CommonUtil.showAlertMessageWithAction(appContext, "Psychologists seems busy at the moment. Would you like to retry?", new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    UserSessionUtil.setSession(appContext, "retryActive", "no");
+                    ChatBotActivity.this.initializeChat(false);
+                    return null;
                 }
-                else {
-                    ChatBotActivity.this.BotRouter("G1");
+            }, new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    UserSessionUtil.setSession(appContext, "retryActive", "no");
+                    if (UserSessionUtil.getSession(appContext, "userskipchatbot").equals("1")) {
+                        Intent i = new Intent(appContext, ChatHistoryActivity.class);
+                        startActivity(i);
+                    } else {
+                        ChatBotActivity.this.BotRouter("G1");
+                    }
+                    return null;
                 }
-                return null;
-            }
-        });
+            });
+        }
     }
 
     public void chatNotifListener()
