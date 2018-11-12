@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -283,17 +284,35 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
-                if(!historyMode)
-                {
-                    String id = myRef.push().getKey();
-                    Messages msg = new Messages(UserID, "<i>-- " + UserFullName + " left this conversation... --</i>", UserType);
-                    myRef.child(id).setValue(msg);
-                }
-                myRef.removeEventListener(chatListener);
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
+                && keyCode == KeyEvent.KEYCODE_BACK
+                && event.getRepeatCount() == 0) {
+            Log.d("CDA", "onKeyDown Called");
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!historyMode)
+        {
+            String id = myRef.push().getKey();
+            Messages msg = new Messages(UserID, "<i>-- " + UserFullName + " left this conversation... --</i>", UserType);
+            myRef.child(id).setValue(msg);
+        }
+        myRef.removeEventListener(chatListener);
+        super.onBackPressed();
     }
 
     @Override
